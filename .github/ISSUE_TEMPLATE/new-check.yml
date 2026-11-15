@@ -1,0 +1,9 @@
+name: New check
+description: Propose a new check
+body:
+  - type: input
+    attributes: { label: "Category and proposed title" }
+  - type: textarea
+    attributes: { label: "What is detected, why it matters, how to fix it, how to verify" }
+  - type: textarea
+    attributes: { label: "Vendor documentation URL for any platform claim" }

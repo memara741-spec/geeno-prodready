@@ -1,0 +1,133 @@
+{
+  "stack": {
+    "framework": "nextjs",
+    "orm": "prisma",
+    "auth": "authjs"
+  },
+  "must_find": [
+    {
+      "check_id": "DB-013",
+      "file": "app/api/tasks/[id]/route.ts"
+    },
+    {
+      "check_id": "DB-012",
+      "file": "app/api/search/route.ts"
+    },
+    {
+      "check_id": "DB-018",
+      "file": "app/api/search/route.ts"
+    },
+    {
+      "check_id": "DB-014",
+      "file": "components/AdminPanel.tsx"
+    },
+    {
+      "check_id": "SEC-010",
+      "file": "lib/auth.ts"
+    },
+    {
+      "check_id": "SEC-009",
+      "file": "lib/auth.ts"
+    },
+    {
+      "check_id": "API-019",
+      "file": "app/api/users/route.ts"
+    },
+    {
+      "check_id": "AUTH-013",
+      "file": "app/api/users/route.ts"
+    },
+    {
+      "check_id": "PERF-001",
+      "file": "app/api/tasks/route.ts"
+    },
+    {
+      "check_id": "API-008",
+      "file": "app/api/tasks/route.ts"
+    },
+    {
+      "check_id": "API-012",
+      "file": "app/api/debug/route.ts"
+    },
+    {
+      "check_id": "API-018",
+      "file": "app/api/admin/purge/route.ts"
+    },
+    {
+      "check_id": "AUTH-017",
+      "file": "prisma/seed.ts"
+    },
+    {
+      "check_id": "OBS-002",
+      "file": "app/api/tasks/route.ts"
+    },
+    {
+      "check_id": "PRIV-004",
+      "file": "app/api/users/route.ts"
+    },
+    {
+      "check_id": "TEST-001"
+    },
+    {
+      "check_id": "TEST-003"
+    },
+    {
+      "check_id": "DEPS-001"
+    },
+    {
+      "check_id": "DEPS-002"
+    },
+    {
+      "check_id": "DEPS-003"
+    },
+    {
+      "check_id": "DEPS-004"
+    },
+    {
+      "check_id": "DEPS-005"
+    },
+    {
+      "check_id": "DEPS-006"
+    },
+    {
+      "check_id": "DEPS-007"
+    },
+    {
+      "check_id": "PAY-011",
+      "file": "prisma/schema.prisma"
+    },
+    {
+      "check_id": "DEP-008",
+      "file": "tsconfig.json"
+    },
+    {
+      "check_id": "OBS-001"
+    }
+  ],
+  "review_only": [
+    {
+      "check_id": "DB-019",
+      "file": "app/api/tasks/route.ts",
+      "note": "tasks are listed and created without checking the caller's organisation"
+    },
+    {
+      "check_id": "API-005",
+      "file": "app/api/tasks/[id]/route.ts",
+      "note": "update by id with no organisation or ownership condition"
+    }
+  ],
+  "must_not_find": [
+    {
+      "check_id": "DB-018",
+      "file": "lib/prisma.ts",
+      "note": "the shared client is cached on globalThis"
+    },
+    {
+      "check_id": "AUTH-002",
+      "file": "app/api/auth/[...nextauth]/route.ts",
+      "note": "the Auth.js handler is the sign-in endpoint itself"
+    }
+  ],
+  "max_false_positive_criticals": 0,
+  "planted_secrets": []
+}

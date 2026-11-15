@@ -1,0 +1,6 @@
+# Keep line endings identical on every platform so scanner output is byte-stable.
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.jpg binary
+*.zip binary

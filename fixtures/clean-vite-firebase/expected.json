@@ -1,0 +1,55 @@
+{
+  "stack": {
+    "framework": "vite-react",
+    "database": "firebase"
+  },
+  "must_find": [],
+  "review_only": [],
+  "must_not_find": [
+    {
+      "check_id": "DB-010"
+    },
+    {
+      "check_id": "DB-011"
+    },
+    {
+      "check_id": "DB-009"
+    },
+    {
+      "check_id": "SEC-001"
+    },
+    {
+      "check_id": "SEC-002"
+    },
+    {
+      "check_id": "SEC-006"
+    },
+    {
+      "check_id": "FE-001"
+    },
+    {
+      "check_id": "FE-004"
+    },
+    {
+      "check_id": "PERF-006"
+    },
+    {
+      "check_id": "PERF-002"
+    },
+    {
+      "check_id": "OBS-001"
+    },
+    {
+      "check_id": "HDR-001"
+    },
+    {
+      "check_id": "TEST-002"
+    },
+    {
+      "check_id": "PRIV-003"
+    }
+  ],
+  "max_false_positive_criticals": 0,
+  "max_severity": "low",
+  "planted_secrets": []
+}

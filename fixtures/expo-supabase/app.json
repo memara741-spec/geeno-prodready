@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "TrailMates",
+    "slug": "trailmates",
+    "version": "1.0.0",
+    "scheme": "trailmates",
+    "ios": { "bundleIdentifier": "com.anonymous.trailmates", "supportsTablet": true },
+    "android": { "package": "com.anonymous.trailmates" },
+    "plugins": [
+      "expo-router",
+      ["expo-build-properties", { "android": { "usesCleartextTraffic": true } }]
+    ],
+    "extra": {
+      "supabaseUrl": "https://fakefixtureprojref07.supabase.co",
+      "supabaseServiceKey": "sb_secret_Fx9aQz7kLm3pRt5vWy2b"
+    }
+  }
+}

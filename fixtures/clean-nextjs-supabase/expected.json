@@ -1,0 +1,62 @@
+{
+  "stack": {
+    "framework": "nextjs",
+    "database": "supabase",
+    "payments": "stripe"
+  },
+  "must_find": [],
+  "review_only": [],
+  "must_not_find": [
+    {
+      "check_id": "PAY-001"
+    },
+    {
+      "check_id": "PAY-002"
+    },
+    {
+      "check_id": "AUTH-002"
+    },
+    {
+      "check_id": "AUTH-005"
+    },
+    {
+      "check_id": "API-014"
+    },
+    {
+      "check_id": "DB-001"
+    },
+    {
+      "check_id": "DB-002"
+    },
+    {
+      "check_id": "DB-007"
+    },
+    {
+      "check_id": "SEC-001"
+    },
+    {
+      "check_id": "SEC-002"
+    },
+    {
+      "check_id": "SEC-006"
+    },
+    {
+      "check_id": "OBS-001"
+    },
+    {
+      "check_id": "API-002"
+    },
+    {
+      "check_id": "MAIL-002"
+    },
+    {
+      "check_id": "HDR-001"
+    },
+    {
+      "check_id": "DEP-003"
+    }
+  ],
+  "max_false_positive_criticals": 0,
+  "max_severity": "low",
+  "planted_secrets": []
+}

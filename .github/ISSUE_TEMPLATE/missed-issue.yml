@@ -1,0 +1,9 @@
+name: Missed issue
+description: prodready did not report a real problem
+body:
+  - type: input
+    attributes: { label: "Check ID it should have matched (if any)" }
+  - type: input
+    attributes: { label: "Stack and versions" }
+  - type: textarea
+    attributes: { label: "Minimal reproduction (use fake secrets)" }

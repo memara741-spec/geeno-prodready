@@ -1,0 +1,13 @@
+-- prodready {{CHECK_ID}}: scope {{TABLE}} to the row owner. Rollback: drop these policies and disable RLS.
+alter table {{SCHEMA}}.{{TABLE}} enable row level security;
+
+create policy "{{TABLE}}_select_own" on {{SCHEMA}}.{{TABLE}} for select to authenticated
+  using ((select auth.uid()) = {{OWNER_COLUMN}});
+create policy "{{TABLE}}_insert_own" on {{SCHEMA}}.{{TABLE}} for insert to authenticated
+  with check ((select auth.uid()) = {{OWNER_COLUMN}});
+create policy "{{TABLE}}_update_own" on {{SCHEMA}}.{{TABLE}} for update to authenticated
+  using ((select auth.uid()) = {{OWNER_COLUMN}}) with check ((select auth.uid()) = {{OWNER_COLUMN}});
+create policy "{{TABLE}}_delete_own" on {{SCHEMA}}.{{TABLE}} for delete to authenticated
+  using ((select auth.uid()) = {{OWNER_COLUMN}});
+
+create index if not exists {{TABLE}}_{{OWNER_COLUMN}}_idx on {{SCHEMA}}.{{TABLE}} ({{OWNER_COLUMN}});

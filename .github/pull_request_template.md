@@ -1,0 +1,5 @@
+- [ ] Tests added or updated
+- [ ] Catalog, prose and generated references consistent (`python3 tools/gen_checks.py`)
+- [ ] Fixture and `expected.json` updated
+- [ ] No new dependencies
+- [ ] Docs updated

@@ -1,0 +1,190 @@
+[
+  {
+    "message": "is my app ready to launch?",
+    "should_trigger": true
+  },
+  {
+    "message": "make this production ready",
+    "should_trigger": true
+  },
+  {
+    "message": "audit my Lovable app before I post it",
+    "should_trigger": true
+  },
+  {
+    "message": "can you check the security before I go live",
+    "should_trigger": true
+  },
+  {
+    "message": "is this ready to ship?",
+    "should_trigger": true
+  },
+  {
+    "message": "my friend said my supabase is open, can you check?",
+    "should_trigger": true
+  },
+  {
+    "message": "audit my bolt app before I post it",
+    "should_trigger": true
+  },
+  {
+    "message": "I built this with Cursor, is it safe to deploy?",
+    "should_trigger": true
+  },
+  {
+    "message": "check my app for exposed API keys",
+    "should_trigger": true
+  },
+  {
+    "message": "are my Stripe webhooks secure?",
+    "should_trigger": true
+  },
+  {
+    "message": "review my firebase rules, I think they are still in test mode",
+    "should_trigger": true
+  },
+  {
+    "message": "do a pre-launch security review of this repo",
+    "should_trigger": true
+  },
+  {
+    "message": "I vibe coded a SaaS, is it production ready?",
+    "should_trigger": true
+  },
+  {
+    "message": "harden this app before real users arrive",
+    "should_trigger": true
+  },
+  {
+    "message": "is my RLS set up correctly? launching Friday",
+    "should_trigger": true
+  },
+  {
+    "message": "productionize this project",
+    "should_trigger": true
+  },
+  {
+    "message": "my Replit app is going live tomorrow, what could go wrong?",
+    "should_trigger": true
+  },
+  {
+    "message": "check whether my routes are protected",
+    "should_trigger": true
+  },
+  {
+    "message": "is my OpenAI key exposed in the frontend?",
+    "should_trigger": true
+  },
+  {
+    "message": "run a launch readiness check on this v0 project",
+    "should_trigger": true
+  },
+  {
+    "message": "هل تطبيقي جاهز للإطلاق؟",
+    "should_trigger": true
+  },
+  {
+    "message": "افحص أمان تطبيقي قبل النشر",
+    "should_trigger": true
+  },
+  {
+    "message": "جهز المشروع للإنتاج",
+    "should_trigger": true
+  },
+  {
+    "message": "tengo una app hecha con Lovable, ¿es segura para lanzar?",
+    "should_trigger": true
+  },
+  {
+    "message": "audita mi app antes de ponerla en producción",
+    "should_trigger": true
+  },
+  {
+    "message": "mon application est-elle prête pour la mise en production ?",
+    "should_trigger": true
+  },
+  {
+    "message": "vérifie la sécurité de mon app Supabase avant le lancement",
+    "should_trigger": true
+  },
+  {
+    "message": "meu app está pronto para lançar?",
+    "should_trigger": true
+  },
+  {
+    "message": "faça uma auditoria de segurança antes de eu publicar",
+    "should_trigger": true
+  },
+  {
+    "message": "mera app Lovable se bana hai, kya yeh launch ke liye safe hai?",
+    "should_trigger": true
+  },
+  {
+    "message": "bhai check kar de ye app production ke liye ready hai ya nahi",
+    "should_trigger": true
+  },
+  {
+    "message": "someone told me my database is public, please audit it",
+    "should_trigger": true
+  },
+  {
+    "message": "write a launch tweet for my app",
+    "should_trigger": false
+  },
+  {
+    "message": "deploy this to Vercel",
+    "should_trigger": false
+  },
+  {
+    "message": "explain RLS",
+    "should_trigger": false
+  },
+  {
+    "message": "build me a landing page",
+    "should_trigger": false
+  },
+  {
+    "message": "review this PR for style",
+    "should_trigger": false
+  },
+  {
+    "message": "pen test this website I found",
+    "should_trigger": false
+  },
+  {
+    "message": "scan my competitor's site for vulnerabilities",
+    "should_trigger": false
+  },
+  {
+    "message": "what is the difference between anon and service role keys?",
+    "should_trigger": false
+  },
+  {
+    "message": "add dark mode to the settings page",
+    "should_trigger": false
+  },
+  {
+    "message": "write unit tests for the cart component",
+    "should_trigger": false
+  },
+  {
+    "message": "refactor this function to use async await",
+    "should_trigger": false
+  },
+  {
+    "message": "how do I set up a Supabase project?",
+    "should_trigger": false
+  },
+  {
+    "message": "generate a privacy policy for my company",
+    "should_trigger": false
+  },
+  {
+    "message": "اكتب لي تغريدة لإطلاق التطبيق",
+    "should_trigger": false
+  },
+  {
+    "message": "explícame qué es una política RLS",
+    "should_trigger": false
+  }
+]

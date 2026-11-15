@@ -1,0 +1,7 @@
+{
+  "name": "Notely",
+  "short_name": "Notely",
+  "start_url": "/",
+  "display": "standalone",
+  "icons": [{ "src": "/notely.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

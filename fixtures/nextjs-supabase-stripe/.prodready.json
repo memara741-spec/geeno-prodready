@@ -1,0 +1,6 @@
+{
+  "exclude": [
+    "expected.json",
+    "FIXTURE.md"
+  ]
+}
