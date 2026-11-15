@@ -1,19 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" role="img" aria-label="geeno-prodready: is your AI-built app safe to launch?">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" role="img" aria-label="GEENO-PRODREADY: is your AI-built app safe to launch?">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b1220"/><stop offset="1" stop-color="#12304a"/></linearGradient>
     <linearGradient id="ac" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#38bdf8"/></linearGradient>
   </defs>
   <rect width="1200" height="320" rx="24" fill="url(#bg)"/>
-  <g transform="translate(90 70)">
-    <path d="M90 0 L180 36 V108 C180 170 140 212 90 232 C40 212 0 170 0 108 V36 Z" fill="none" stroke="url(#ac)" stroke-width="10" stroke-linejoin="round"/>
-    <path d="M52 112 L82 142 L132 82" fill="none" stroke="#2dd4bf" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <g transform="translate(80 44)">
+    <path d="M100 0 L200 40 V120 C200 188 156 234 100 256 C44 234 0 188 0 120 V40 Z" fill="none" stroke="url(#ac)" stroke-width="11" stroke-linejoin="round"/>
+    <path d="M58 124 L92 158 L148 92" fill="none" stroke="#2dd4bf" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
-  <text x="320" y="130" font-family="system-ui,Segoe UI,Arial,sans-serif" font-size="64" font-weight="800" fill="#f8fafc">geeno-prodready</text>
-  <text x="322" y="182" font-family="system-ui,Segoe UI,Arial,sans-serif" font-size="28" fill="#cbd5e1">Is your AI-built app safe to launch? Find out, then fix it.</text>
-  <text x="322" y="226" font-family="system-ui,Segoe UI,Arial,sans-serif" font-size="22" fill="#94a3b8">187 checks · evidence with file and line · verified fixes · runs locally</text>
-  <g font-family="system-ui,Segoe UI,Arial,sans-serif" font-size="18" font-weight="600">
-    <rect x="322" y="250" width="150" height="34" rx="17" fill="#134e4a"/><text x="397" y="273" text-anchor="middle" fill="#5eead4">Claude skill</text>
-    <rect x="486" y="250" width="170" height="34" rx="17" fill="#1e3a5f"/><text x="571" y="273" text-anchor="middle" fill="#7dd3fc">Python stdlib only</text>
-    <rect x="670" y="250" width="110" height="34" rx="17" fill="#3b2a5a"/><text x="725" y="273" text-anchor="middle" fill="#c4b5fd">MIT</text>
+  <g font-family="system-ui,Segoe UI,Arial,sans-serif">
+    <text x="330" y="112" font-size="62" font-weight="800" fill="#f8fafc" letter-spacing="1">GEENO-PRODREADY</text>
+    <text x="332" y="164" font-size="25" font-weight="600" fill="#e2e8f0" letter-spacing=".5">IS YOUR AI-BUILT APP SAFE TO LAUNCH?</text>
+    <text x="332" y="198" font-size="25" font-weight="600" fill="#5eead4" letter-spacing=".5">FIND OUT, THEN FIX IT.</text>
+    <text x="332" y="238" font-size="17" fill="#94a3b8" letter-spacing=".8">187 CHECKS · FILE AND LINE EVIDENCE · VERIFIED FIXES · RUNS LOCALLY</text>
+    <g font-size="15" font-weight="700" letter-spacing=".8">
+      <rect x="332" y="256" width="132" height="34" rx="17" fill="#134e4a"/><text x="398" y="278" text-anchor="middle" fill="#5eead4">CLAUDE SKILL</text>
+      <rect x="478" y="256" width="188" height="34" rx="17" fill="#1e3a5f"/><text x="572" y="278" text-anchor="middle" fill="#7dd3fc">PYTHON STDLIB ONLY</text>
+      <rect x="680" y="256" width="72" height="34" rx="17" fill="#3b2a5a"/><text x="716" y="278" text-anchor="middle" fill="#c4b5fd">MIT</text>
+    </g>
   </g>
 </svg>

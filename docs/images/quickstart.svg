@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" role="img" aria-label="Quick start commands">
+  <rect width="1200" height="520" rx="20" fill="#0b1220"/>
+  <rect width="1200" height="44" rx="20" fill="#1e293b"/><rect y="24" width="1200" height="20" fill="#1e293b"/>
+  <circle cx="30" cy="22" r="7" fill="#f87171"/><circle cx="54" cy="22" r="7" fill="#fbbf24"/><circle cx="78" cy="22" r="7" fill="#4ade80"/>
+  <text x="600" y="28" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="14" fill="#94a3b8">QUICK START</text>
+  <g font-family="ui-monospace,Consolas,'Courier New',monospace" font-size="17">
+    <text x="40" y="92" fill="#64748b"># 1. get it</text>
+    <text x="40" y="122" fill="#e2e8f0"><tspan fill="#5eead4">$</tspan> git clone https://github.com/memara741-spec/geeno-prodready.git</text>
+    <text x="40" y="168" fill="#64748b"># 2. scan an app (summary in the terminal)</text>
+    <text x="40" y="198" fill="#e2e8f0"><tspan fill="#5eead4">$</tspan> python3 geeno-prodready/skills/prodready/scripts/run_all.py ./my-app --format summary</text>
+    <text x="40" y="244" fill="#64748b"># 3. save the findings, then render a shareable report</text>
+    <text x="40" y="274" fill="#e2e8f0"><tspan fill="#5eead4">$</tspan> python3 .../run_all.py ./my-app --history --out ./my-app/.prodready/findings.json</text>
+    <text x="40" y="304" fill="#e2e8f0"><tspan fill="#5eead4">$</tspan> python3 .../render_report.py ./my-app --format html --out report.html</text>
+    <text x="40" y="350" fill="#64748b"># 4. or just ask Claude, with the skill installed</text>
+    <text x="40" y="380" fill="#fcd34d">&gt; is this app ready to launch?</text>
+    <text x="40" y="426" fill="#64748b"># CI: fail the build on a confirmed critical finding</text>
+    <text x="40" y="456" fill="#e2e8f0"><tspan fill="#5eead4">$</tspan> python3 .../run_all.py . --fail-on critical --format sarif --out prodready.sarif</text>
+  </g>
+  <text x="600" y="498" text-anchor="middle" font-family="system-ui,Segoe UI,Arial,sans-serif" font-size="14" fill="#94a3b8">Needs Python 3.9 or newer. Nothing to install.</text>
+</svg>
