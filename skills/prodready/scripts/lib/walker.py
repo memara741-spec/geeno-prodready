@@ -453,6 +453,10 @@ class Project:
             return "django"
         if self.exists("pubspec.yaml"):
             return "flutter"
+        if self.exists("composer.json"):
+            raw = self.read("composer.json")
+            if "laravel/framework" in raw or self.exists("artisan"):
+                return "laravel"
         return "unknown"
 
     # -- classification -----------------------------------------------------

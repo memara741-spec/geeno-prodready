@@ -20,7 +20,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence
 from . import catalog
 from .redact import redact_text
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 TOOL = "prodready"
 
 SEVERITIES = ["info", "low", "medium", "high", "critical"]

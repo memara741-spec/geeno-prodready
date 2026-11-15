@@ -47,7 +47,7 @@ Ask which findings to fix; offer all critical and high by default. Follow the fi
 
 ## Phase 6: Verify
 
-Run `python3 scripts/verify_fixes.py <app_root> --baseline .prodready/findings.json`. For review-only findings, re-read the changed code and write a test where practical. Run the app's own build and tests. Add a Verification section with before and after.
+Run `python3 scripts/verify_fixes.py <app_root> --baseline .prodready/findings.json`. For review-only findings, re-read the changed code and write a test where practical. Run the app's own build and tests. Add a Verification section with before and after. To leave tests behind, run `python scripts/generate_regression_tests.py <app_root> --findings .prodready/findings.json`: it writes a guard test (fails before the fix, passes after), a Laravel route contract and behaviour tests, and Node tests for open routes into `.prodready/regression/`; run them before and after the fix and tell the user which ones you could not run.
 
 ## Phase 7: Launch gate
 
@@ -80,6 +80,8 @@ If a critical finding affects a live app (an exposed secret, an open database) t
 | `framework: remix`, `sveltekit`, `nuxt` | `references/stacks/remix-sveltekit-nuxt.md` |
 | `framework: express`, `fastify`, `hono`, `koa` | `references/stacks/express-node.md` |
 | `framework: django`, `flask`, `fastapi` | `references/stacks/python-backends.md` |
+| `framework: laravel` | `references/stacks/laravel.md`, `references/checks/laravel.md`, `references/checks/multitenancy.md`, `references/checks/business-logic.md` |
+| any app with docker, nginx, Apache or deploy scripts | `references/checks/infrastructure.md` |
 | `mobile: expo` or `react-native` | `references/stacks/expo-react-native.md` |
 | `payments: any` | `references/stacks/stripe.md`, `references/checks/payments.md` |
 | `auth: any` | `references/stacks/auth-providers.md`, `references/checks/auth.md` |

@@ -1,0 +1,247 @@
+{
+  "stack": {
+    "framework": "laravel",
+    "database": "mysql",
+    "auth": "laravel-sanctum",
+    "hosting": "docker"
+  },
+  "must_find": [
+    {
+      "check_id": "LARA-001",
+      "file": ".env"
+    },
+    {
+      "check_id": "LARA-002",
+      "file": ".env"
+    },
+    {
+      "check_id": "LARA-003",
+      "file": "app/Models/Invoice.php"
+    },
+    {
+      "check_id": "LARA-003",
+      "file": "app/Models/User.php"
+    },
+    {
+      "check_id": "LARA-004",
+      "file": "app/Http/Controllers/InvoiceController.php"
+    },
+    {
+      "check_id": "LARA-005",
+      "file": "resources/views/livewire/edit-invoice.blade.php"
+    },
+    {
+      "check_id": "LARA-006",
+      "file": "app/Http/Controllers/AuthController.php"
+    },
+    {
+      "check_id": "LARA-006",
+      "file": "config/sanctum.php"
+    },
+    {
+      "check_id": "LARA-007",
+      "file": "app/Livewire/EditInvoice.php"
+    },
+    {
+      "check_id": "LARA-008",
+      "file": "app/Livewire/EditInvoice.php"
+    },
+    {
+      "check_id": "LARA-009",
+      "file": "app/Http/Controllers/UserController.php"
+    },
+    {
+      "check_id": "LARA-010",
+      "file": "app/Http/Controllers/InvoiceController.php"
+    },
+    {
+      "check_id": "LARA-011",
+      "file": "app/Http/Controllers/UserController.php"
+    },
+    {
+      "check_id": "LARA-012",
+      "file": "app/Http/Controllers/UserController.php"
+    },
+    {
+      "check_id": "LARA-013",
+      "file": "bootstrap/app.php"
+    },
+    {
+      "check_id": "LARA-014",
+      "file": "config/cors.php"
+    },
+    {
+      "check_id": "LARA-015",
+      "file": "composer.json"
+    },
+    {
+      "check_id": "LARA-016",
+      "file": "app/Providers/AuthServiceProvider.php"
+    },
+    {
+      "check_id": "LARA-017",
+      "file": "composer.json"
+    },
+    {
+      "check_id": "API-020",
+      "file": "routes/api.php"
+    },
+    {
+      "check_id": "API-021",
+      "file": "app/Http/Controllers/InvoiceController.php"
+    },
+    {
+      "check_id": "AUTH-002",
+      "file": "routes/api.php"
+    },
+    {
+      "check_id": "TEN-001",
+      "file": "app/Models/Invoice.php"
+    },
+    {
+      "check_id": "TEN-001",
+      "file": "app/Models/Project.php"
+    },
+    {
+      "check_id": "TEN-002",
+      "file": "app/Http/Controllers/InvoiceController.php"
+    },
+    {
+      "check_id": "TEN-003",
+      "file": "app/Http/Controllers/InvoiceController.php"
+    },
+    {
+      "check_id": "TEN-004",
+      "file": "app/Http/Controllers/ProjectController.php"
+    },
+    {
+      "check_id": "TEN-005",
+      "file": "app/Http/Controllers/ReportController.php"
+    },
+    {
+      "check_id": "TEN-006",
+      "file": "app/Http/Controllers/ReportController.php"
+    },
+    {
+      "check_id": "TEN-007",
+      "file": "database/migrations/2025_01_01_000001_create_invoices_table.php"
+    },
+    {
+      "check_id": "BIZ-001",
+      "file": "app/Http/Controllers/WalletController.php"
+    },
+    {
+      "check_id": "BIZ-001",
+      "file": "app/Jobs/ProcessPayout.php"
+    },
+    {
+      "check_id": "BIZ-002",
+      "file": "app/Http/Controllers/BookingController.php"
+    },
+    {
+      "check_id": "BIZ-003",
+      "file": "app/Http/Controllers/WalletController.php"
+    },
+    {
+      "check_id": "BIZ-004",
+      "file": "app/Http/Controllers/WalletController.php"
+    },
+    {
+      "check_id": "BIZ-005",
+      "file": "database/migrations/2025_01_01_000001_create_invoices_table.php"
+    },
+    {
+      "check_id": "BIZ-006",
+      "file": "app/Http/Controllers/BookingController.php"
+    },
+    {
+      "check_id": "BIZ-007",
+      "file": "app/Jobs/ProcessPayout.php"
+    },
+    {
+      "check_id": "PERF-001",
+      "file": "app/Http/Controllers/ReportController.php"
+    },
+    {
+      "check_id": "PERF-007",
+      "file": "resources/views/livewire/edit-invoice.blade.php"
+    },
+    {
+      "check_id": "PERF-008",
+      "file": "app/Http/Controllers/InvoiceController.php"
+    },
+    {
+      "check_id": "PERF-009",
+      "file": "app/Http/Controllers/ReportController.php"
+    },
+    {
+      "check_id": "PERF-010",
+      "file": "app/Http/Controllers/ReportController.php"
+    },
+    {
+      "check_id": "PERF-011",
+      "file": ".env"
+    },
+    {
+      "check_id": "PERF-012",
+      "file": "database/migrations/2025_01_01_000001_create_invoices_table.php"
+    },
+    {
+      "check_id": "INFRA-001",
+      "file": "docker/nginx.conf"
+    },
+    {
+      "check_id": "INFRA-002",
+      "file": "docker/nginx.conf"
+    },
+    {
+      "check_id": "INFRA-003",
+      "file": "Dockerfile"
+    },
+    {
+      "check_id": "INFRA-004",
+      "file": "routes/console.php"
+    },
+    {
+      "check_id": "INFRA-005",
+      "file": "routes/console.php"
+    },
+    {
+      "check_id": "INFRA-006",
+      "file": "docker-compose.yml"
+    },
+    {
+      "check_id": "INFRA-007",
+      "file": "deploy.sh"
+    },
+    {
+      "check_id": "INFRA-008",
+      "file": "docker-compose.yml"
+    },
+    {
+      "check_id": "INFRA-009",
+      "file": ".env"
+    }
+  ],
+  "must_not_find": [
+    {
+      "check_id": "TEN-001",
+      "file": "app/Models/Customer.php",
+      "note": "uses the BelongsToTenant global scope"
+    },
+    {
+      "check_id": "BIZ-004",
+      "file": "app/Http/Controllers/BookingController.php",
+      "note": "no money amount is validated there"
+    },
+    {
+      "check_id": "LARA-010",
+      "file": "app/Http/Controllers/BookingController.php",
+      "note": "validated before the write"
+    }
+  ],
+  "max_false_positive_criticals": 0,
+  "planted_secrets": [
+    "Zm9vYmFyYmF6cXV4cXV1eGNvcmdlZ3JhdWx0Z2FycGx5ZmFr"
+  ]
+}

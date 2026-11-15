@@ -1,0 +1,17 @@
+{
+    "name": "acme/clean-booking",
+    "type": "project",
+    "require": {
+        "php": "^8.3",
+        "laravel/framework": "^12.0",
+        "laravel/sanctum": "^4.0",
+        "livewire/livewire": "^3.6",
+        "sentry/sentry-laravel": "^4.10",
+        "spatie/laravel-backup": "^9.0",
+        "spatie/laravel-permission": "^6.9"
+    },
+    "require-dev": {
+        "laravel/telescope": "^5.2",
+        "phpunit/phpunit": "^11.0"
+    }
+}

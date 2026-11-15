@@ -102,6 +102,18 @@
     },
     {
       "check_id": "OBS-001"
+    },
+    {
+      "check_id": "TEN-003",
+      "file": "app/api/tasks/route.ts"
+    },
+    {
+      "check_id": "TEN-003",
+      "file": "app/api/tasks/[id]/route.ts"
+    },
+    {
+      "check_id": "TEN-003",
+      "file": "app/api/users/route.ts"
     }
   ],
   "review_only": [

@@ -193,6 +193,54 @@ Every check, with default severity, mode and the script that implements it. Gene
 | [LAUNCH-008](launch.md#launch-008) | Mobile store requirements unmet | medium | scan+review | expo, react-native, capacitor, flutter | scan_config |
 | [LAUNCH-009](launch.md#launch-009) | No README or handover documentation | low | scan | all | scan_config |
 | [LAUNCH-010](launch.md#launch-010) | First-run experience untested with a fresh account | medium | review | all | review |
+| [LARA-001](laravel.md#lara-001) | Debug mode or a local environment enabled in production configuration | high | scan | laravel | scan_laravel |
+| [LARA-002](laravel.md#lara-002) | Application key committed to the repository | critical | scan | laravel | scan_laravel |
+| [LARA-003](laravel.md#lara-003) | Mass assignment is unguarded | high | scan | laravel | scan_laravel |
+| [LARA-004](laravel.md#lara-004) | Raw SQL built from variables | critical | scan | laravel | scan_laravel |
+| [LARA-005](laravel.md#lara-005) | Variable printed into a page without escaping | high | scan | laravel blade, livewire | scan_laravel |
+| [LARA-006](laravel.md#lara-006) | API tokens issued with every ability or never expiring | high | scan | laravel sanctum | scan_laravel |
+| [LARA-007](laravel.md#lara-007) | Livewire public property holds an identifier the browser can change | high | scan | livewire 3 | scan_laravel |
+| [LARA-008](laravel.md#lara-008) | Livewire action changes data without an authorisation check | high | scan | livewire 3 | scan_laravel |
+| [LARA-009](laravel.md#lara-009) | Roles or permissions assigned from request input | critical | scan | laravel spatie permission | scan_laravel |
+| [LARA-010](laravel.md#lara-010) | Controller writes request data without validation | medium | scan | laravel | scan_laravel |
+| [LARA-011](laravel.md#lara-011) | Uploaded file stored under a client-controlled name or extension | high | scan | laravel | scan_laravel |
+| [LARA-012](laravel.md#lara-012) | Request input reaches a command, eval or unserialize | critical | scan | laravel, php | scan_laravel |
+| [LARA-013](laravel.md#lara-013) | CSRF protection switched off for broad route patterns | medium | scan | laravel | scan_laravel |
+| [LARA-014](laravel.md#lara-014) | Cross-origin policy allows every site with credentials | high | scan | laravel | scan_laravel |
+| [LARA-015](laravel.md#lara-015) | Laravel version no longer receives security fixes | high | scan | laravel | scan_laravel |
+| [LARA-016](laravel.md#lara-016) | Authorisation gate grants access to everyone | high | scan | laravel | scan_laravel |
+| [LARA-017](laravel.md#lara-017) | Debugging tools installed as production dependencies | medium | scan | laravel | scan_laravel |
+| [API-020](api.md#api-020) | Laravel routes with no rate limit | high | scan | laravel | scan_laravel |
+| [API-021](api.md#api-021) | Route-bound record used without an ownership or policy check | high | scan | laravel | scan_laravel |
+| [TEN-001](multitenancy.md#ten-001) | Tenant-owned table has a model with no tenant scope | critical | scan | laravel, prisma | scan_tenancy |
+| [TEN-002](multitenancy.md#ten-002) | Tenant scope switched off in request-handling code | high | scan | laravel | scan_tenancy |
+| [TEN-003](multitenancy.md#ten-003) | Record looked up by ID without a tenant filter | critical | scan | laravel, prisma | scan_tenancy |
+| [TEN-004](multitenancy.md#ten-004) | Tenant or company ID taken from the request | critical | scan | laravel, express, nextjs | scan_tenancy |
+| [TEN-005](multitenancy.md#ten-005) | Cache keys or storage paths not separated by tenant | medium | scan | laravel | scan_tenancy |
+| [TEN-006](multitenancy.md#ten-006) | Unique or exists validation ignores the tenant | medium | scan | laravel | scan_tenancy |
+| [TEN-007](multitenancy.md#ten-007) | Tenant column is nullable or has no index | high | scan | laravel | scan_tenancy |
+| [BIZ-001](business-logic.md#biz-001) | Balance or stock changed by read-then-write without a lock | critical | scan | laravel, node | scan_logic |
+| [BIZ-002](business-logic.md#biz-002) | Availability checked and then acted on without a lock or unique constraint | high | scan | laravel | scan_logic |
+| [BIZ-003](business-logic.md#biz-003) | Money-moving endpoint has no protection against repeats | high | scan | laravel | scan_logic |
+| [BIZ-004](business-logic.md#biz-004) | Amount from the request is not limited to a positive range | high | scan | laravel | scan_logic |
+| [BIZ-005](business-logic.md#biz-005) | Money stored in a floating-point column | medium | scan | laravel | scan_logic |
+| [BIZ-006](business-logic.md#biz-006) | Client can set price, total, status or balance fields | high | scan | laravel | scan_logic |
+| [BIZ-007](business-logic.md#biz-007) | Queued money job can run twice | medium | scan | laravel | scan_logic |
+| [PERF-007](performance.md#perf-007) | Related records loaded one by one inside a loop (N+1) | medium | scan | laravel | scan_performance |
+| [PERF-008](performance.md#perf-008) | Whole table loaded on a request path | medium | scan | laravel | scan_performance |
+| [PERF-009](performance.md#perf-009) | Query shape that cannot use an index or loads everything into memory | medium | scan | laravel | scan_performance |
+| [PERF-010](performance.md#perf-010) | Email or outside call made inside the request | medium | scan | laravel | scan_performance |
+| [PERF-011](performance.md#perf-011) | Queue, cache or session driver unsuitable for production | medium | scan | laravel | scan_performance |
+| [PERF-012](performance.md#perf-012) | Foreign key column without an index | medium | scan | laravel | scan_performance |
+| [INFRA-001](infrastructure.md#infra-001) | Web server serves the project root or dotfiles | high | scan | nginx, apache, docker | scan_infra |
+| [INFRA-002](infrastructure.md#infra-002) | TLS misconfigured or certificate checks disabled | high | scan | nginx, apache, any code | scan_infra |
+| [INFRA-003](infrastructure.md#infra-003) | World-writable permissions in build or deploy scripts | high | scan | docker, shell, ci | scan_infra |
+| [INFRA-004](infrastructure.md#infra-004) | Scheduler or queue worker has no process that runs it | medium | scan | laravel | scan_infra |
+| [INFRA-005](infrastructure.md#infra-005) | Scheduled tasks can overlap or fail silently | low | scan | laravel | scan_infra |
+| [INFRA-006](infrastructure.md#infra-006) | No database backup job defined | medium | scan | laravel | scan_infra |
+| [INFRA-007](infrastructure.md#infra-007) | Deploy builds without production optimisation | medium | scan | laravel, php, node | scan_infra |
+| [INFRA-008](infrastructure.md#infra-008) | Database or cache port published to the internet, or default password | high | scan | docker compose | scan_infra |
+| [INFRA-009](infrastructure.md#infra-009) | Logs are never rotated | low | scan | laravel | scan_infra |
 
 ## Review-only checks
 

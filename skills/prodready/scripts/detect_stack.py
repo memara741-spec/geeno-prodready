@@ -237,6 +237,12 @@ def summarise_root(project: walker.Project) -> Dict[str, Any]:
     fw = project._guess_framework()
     fw_pkg = {"nextjs": "next", "vite-react": "vite", "vite-vue": "vite", "vite-svelte": "vite", "vite": "vite", "cra": "react-scripts", "sveltekit": "@sveltejs/kit", "nestjs": "@nestjs/core", "remix": "@remix-run/react", "angular": "@angular/core"}.get(fw, fw)
     version = _clean_version(deps.get(fw_pkg, "") or pydeps.get(fw, ""))
+    comp: Dict[str, Any] = {"require": {}, "dev": {}}
+    if fw == "laravel":
+        from lib import phpscan
+        comp = phpscan.composer(project)
+        major = phpscan.laravel_major(project)
+        version = str(major) if major else _clean_version(comp["require"].get("laravel/framework", ""))
     router = None
     if fw == "nextjs":
         has_app = any(re.match(r"(src/)?app/.*\.(tsx|jsx|ts|js)$", p) for p in paths)
@@ -247,7 +253,7 @@ def summarise_root(project: walker.Project) -> Dict[str, Any]:
     rendering = {
         "nextjs": ["server", "client"], "nuxt": ["server", "client"], "sveltekit": ["server", "client"], "remix": ["server", "client"],
         "astro": ["server", "client"], "express": ["server"], "fastify": ["server"], "hono": ["server"], "koa": ["server"],
-        "nestjs": ["server"], "django": ["server"], "flask": ["server"], "fastapi": ["server"],
+        "nestjs": ["server"], "laravel": ["server"], "django": ["server"], "flask": ["server"], "fastapi": ["server"],
     }.get(fw, ["client"] if fw != "unknown" else [])
 
     languages: List[str] = []
@@ -259,6 +265,8 @@ def summarise_root(project: walker.Project) -> Dict[str, Any]:
         languages.append("python")
     if any(p.endswith(".dart") for p in paths):
         languages.append("dart")
+    if any(p.endswith(".php") for p in paths) or project.exists("composer.json"):
+        languages.append("php")
     if any(p.endswith(".sql") for p in paths):
         languages.append("sql")
 
@@ -310,6 +318,14 @@ def summarise_root(project: walker.Project) -> Dict[str, Any]:
             backend.append(_entry("firebase-functions", confidence="high"))
     if fw == "nextjs" and any(re.search(r"(^|/)(app/.*/route|pages/api/.*)\.[jt]sx?$", p) for p in paths):
         backend.append(_entry("next-route-handlers", confidence="high"))
+    if fw == "laravel":
+        extras = {k.split("/")[-1]: v for k, v in comp["require"].items() if k in ("livewire/livewire", "laravel/sanctum", "spatie/laravel-permission", "laravel/fortify", "laravel/breeze", "laravel/jetstream", "laravel/passport", "stancl/tenancy", "laravel/cashier", "laravel/horizon", "laravel/octane", "laravel/telescope")}
+        backend.append(_entry("laravel", confidence="high", packages=sorted(extras)))
+        for pkg, label in (("laravel/sanctum", "laravel-sanctum"), ("laravel/passport", "laravel-passport"), ("laravel/fortify", "laravel-fortify"), ("laravel/breeze", "laravel-breeze"), ("laravel/jetstream", "laravel-jetstream")):
+            if pkg in comp["require"]:
+                auth.append(_entry(label))
+        if "laravel/cashier" in comp["require"]:
+            pass
     if fw in ("express", "fastify", "hono", "koa", "nestjs", "django", "flask", "fastapi"):
         backend.append(_entry(fw, confidence="high"))
     elif any(k in deps for k in ("express", "fastify", "hono", "koa")):
@@ -372,6 +388,9 @@ def summarise_root(project: walker.Project) -> Dict[str, Any]:
         if key in sig and not any(a["name"] == label for a in analytics):
             analytics.append(_entry(label))
     error_tracking = [_entry(n) for n in _pkg_match(alldeps, _ERROR_PKGS)]
+    for pkg, label in (("sentry/sentry-laravel", "sentry"), ("sentry/sentry", "sentry"), ("bugsnag/bugsnag-laravel", "bugsnag"), ("spatie/laravel-flare", "flare"), ("spatie/flare-client-php", "flare"), ("rollbar/rollbar-laravel", "rollbar"), ("honeybadger-io/honeybadger-laravel", "honeybadger"), ("laravel/nightwatch", "nightwatch")):
+        if pkg in comp["require"] and not any(e["name"] == label for e in error_tracking):
+            error_tracking.append(_entry(label))
     if not error_tracking and "custom-error-reporting" in sig:
         error_tracking.append(_entry("custom", evidence=sig["custom-error-reporting"][:3]))
 

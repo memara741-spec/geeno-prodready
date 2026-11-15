@@ -38,6 +38,10 @@ CATEGORIES: Dict[str, Dict[str, str]] = {
     "MAIL": {"slug": "email", "name": "Email and messaging"},
     "TEST": {"slug": "testing", "name": "Tests and CI"},
     "LAUNCH": {"slug": "launch", "name": "Launch polish"},
+    "LARA": {"slug": "laravel", "name": "Laravel deep scan"},
+    "TEN": {"slug": "multitenancy", "name": "Multi-tenant isolation"},
+    "BIZ": {"slug": "business-logic", "name": "Business logic and money"},
+    "INFRA": {"slug": "infrastructure", "name": "Production infrastructure"},
 }
 
 _ROWS = """
@@ -228,6 +232,54 @@ LAUNCH-007|medium|review|owner|web|-|Custom domain, redirects and certificates n
 LAUNCH-008|medium|scan+review|assisted+owner|expo, react-native, capacitor, flutter|scan_config|Mobile store requirements unmet
 LAUNCH-009|low|scan|auto|all|scan_config|No README or handover documentation
 LAUNCH-010|medium|review|assisted|all|-|First-run experience untested with a fresh account
+LARA-001|high|scan|assisted+owner|laravel|scan_laravel|Debug mode or a local environment enabled in production configuration
+LARA-002|critical|scan|assisted+owner|laravel|scan_laravel|Application key committed to the repository
+LARA-003|high|scan|assisted|laravel|scan_laravel|Mass assignment is unguarded
+LARA-004|critical|scan|assisted|laravel|scan_laravel|Raw SQL built from variables
+LARA-005|high|scan|assisted|laravel blade, livewire|scan_laravel|Variable printed into a page without escaping
+LARA-006|high|scan|assisted|laravel sanctum|scan_laravel|API tokens issued with every ability or never expiring
+LARA-007|high|scan|assisted|livewire 3|scan_laravel|Livewire public property holds an identifier the browser can change
+LARA-008|high|scan|assisted|livewire 3|scan_laravel|Livewire action changes data without an authorisation check
+LARA-009|critical|scan|assisted|laravel spatie permission|scan_laravel|Roles or permissions assigned from request input
+LARA-010|medium|scan|assisted|laravel|scan_laravel|Controller writes request data without validation
+LARA-011|high|scan|assisted|laravel|scan_laravel|Uploaded file stored under a client-controlled name or extension
+LARA-012|critical|scan|assisted|laravel, php|scan_laravel|Request input reaches a command, eval or unserialize
+LARA-013|medium|scan|auto/assisted|laravel|scan_laravel|CSRF protection switched off for broad route patterns
+LARA-014|high|scan|auto/assisted|laravel|scan_laravel|Cross-origin policy allows every site with credentials
+LARA-015|high|scan|assisted|laravel|scan_laravel|Laravel version no longer receives security fixes
+LARA-016|high|scan|assisted|laravel|scan_laravel|Authorisation gate grants access to everyone
+LARA-017|medium|scan|assisted|laravel|scan_laravel|Debugging tools installed as production dependencies
+API-020|high|scan|assisted|laravel|scan_laravel|Laravel routes with no rate limit
+API-021|high|scan|assisted|laravel|scan_laravel|Route-bound record used without an ownership or policy check
+TEN-001|critical|scan|assisted|laravel, prisma|scan_tenancy|Tenant-owned table has a model with no tenant scope
+TEN-002|high|scan|assisted|laravel|scan_tenancy|Tenant scope switched off in request-handling code
+TEN-003|critical|scan|assisted|laravel, prisma|scan_tenancy|Record looked up by ID without a tenant filter
+TEN-004|critical|scan|assisted|laravel, express, nextjs|scan_tenancy|Tenant or company ID taken from the request
+TEN-005|medium|scan|assisted|laravel|scan_tenancy|Cache keys or storage paths not separated by tenant
+TEN-006|medium|scan|assisted|laravel|scan_tenancy|Unique or exists validation ignores the tenant
+TEN-007|high|scan|assisted|laravel|scan_tenancy|Tenant column is nullable or has no index
+BIZ-001|critical|scan|assisted|laravel, node|scan_logic|Balance or stock changed by read-then-write without a lock
+BIZ-002|high|scan|assisted|laravel|scan_logic|Availability checked and then acted on without a lock or unique constraint
+BIZ-003|high|scan|assisted|laravel|scan_logic|Money-moving endpoint has no protection against repeats
+BIZ-004|high|scan|assisted|laravel|scan_logic|Amount from the request is not limited to a positive range
+BIZ-005|medium|scan|assisted|laravel|scan_logic|Money stored in a floating-point column
+BIZ-006|high|scan|assisted|laravel|scan_logic|Client can set price, total, status or balance fields
+BIZ-007|medium|scan|assisted|laravel|scan_logic|Queued money job can run twice
+PERF-007|medium|scan|assisted|laravel|scan_performance|Related records loaded one by one inside a loop (N+1)
+PERF-008|medium|scan|assisted|laravel|scan_performance|Whole table loaded on a request path
+PERF-009|medium|scan|assisted|laravel|scan_performance|Query shape that cannot use an index or loads everything into memory
+PERF-010|medium|scan|assisted|laravel|scan_performance|Email or outside call made inside the request
+PERF-011|medium|scan|assisted+owner|laravel|scan_performance|Queue, cache or session driver unsuitable for production
+PERF-012|medium|scan|assisted|laravel|scan_performance|Foreign key column without an index
+INFRA-001|high|scan|assisted|nginx, apache, docker|scan_infra|Web server serves the project root or dotfiles
+INFRA-002|high|scan|assisted|nginx, apache, any code|scan_infra|TLS misconfigured or certificate checks disabled
+INFRA-003|high|scan|assisted|docker, shell, ci|scan_infra|World-writable permissions in build or deploy scripts
+INFRA-004|medium|scan|assisted+owner|laravel|scan_infra|Scheduler or queue worker has no process that runs it
+INFRA-005|low|scan|assisted|laravel|scan_infra|Scheduled tasks can overlap or fail silently
+INFRA-006|medium|scan|assisted+owner|laravel|scan_infra|No database backup job defined
+INFRA-007|medium|scan|assisted|laravel, php, node|scan_infra|Deploy builds without production optimisation
+INFRA-008|high|scan|assisted+owner|docker compose|scan_infra|Database or cache port published to the internet, or default password
+INFRA-009|low|scan|auto/assisted|laravel|scan_infra|Logs are never rotated
 """
 
 

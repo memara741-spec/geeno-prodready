@@ -192,3 +192,7 @@ T = {
 "LAUNCH-009": ("There is no README explaining how to run and deploy the app.", "Nobody else, including a future AI agent, can work on it safely.", "Write what the app is, the stack, how to run it, environment variables, how to deploy, and where data lives.", "File present and accurate."),
 "LAUNCH-010": ("A brand-new user's first run has never been tried on production.", "The first real user hits the path the builder never tested.", "Run a ten-step manual smoke test on the production deployment before announcing.", "Owner confirms completion."),
 }
+
+from check_text_v11 import T_NEW  # noqa: E402
+
+T.update(T_NEW)

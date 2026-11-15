@@ -1,6 +1,6 @@
 # Server endpoints and input handling (API)
 
-What this covers: the 19 API checks. Read it when a finding in this category appears or when reviewing this area. After reading you can explain each finding in plain words, fix it and verify the fix.
+What this covers: the 21 API checks. Read it when a finding in this category appears or when reviewing this area. After reading you can explain each finding in plain words, fix it and verify the fix.
 Last checked: 2026-11-13. Platform claims were confirmed against vendor documentation on that date where a URL is given in the stack playbooks; claims without a URL are marked in the playbook.
 
 ### API-001 — Request input is not validated
@@ -268,5 +268,33 @@ Last checked: 2026-11-13. Platform claims were confirmed against vendor document
 **Fix:** Select explicit fields or use response schemas.
 
 **Verify:** A test asserts sensitive fields are absent.
+
+### API-020 — Laravel routes with no rate limit
+**Severity:** high · **Mode:** scan · **Applies to:** laravel
+**Auto-fix:** assisted
+
+**In plain words:** Nothing limits how often someone can call the sign-in, password or data-changing routes.
+
+**How to detect:** Run `scripts/scan_laravel.py` (or `scripts/run_all.py`). It reports this check with file, line and a redacted snippet. Open each location before reporting it.
+
+**Why it matters:** Unlimited attempts allow password guessing, code brute force and cost abuse.
+
+**Fix:** Add `throttle:` middleware or `$middleware->throttleApi()` and a named limiter keyed by IP and email for sign-in routes.
+
+**Verify:** The eleventh request in a minute gets 429.
+
+### API-021 — Route-bound record used without an ownership or policy check
+**Severity:** high · **Mode:** scan · **Applies to:** laravel
+**Auto-fix:** assisted
+
+**In plain words:** A route picks a record by the ID in the URL and never checks that it belongs to the caller.
+
+**How to detect:** Run `scripts/scan_laravel.py` (or `scripts/run_all.py`). It reports this check with file, line and a redacted snippet. Open each location before reporting it.
+
+**Why it matters:** Anyone signed in can read or change other people's records by changing the number (an IDOR).
+
+**Fix:** Add a policy and `$this->authorize()`, or load the record through the user's own relation.
+
+**Verify:** A test as user B requesting user A's record gets 403 or 404.
 
 

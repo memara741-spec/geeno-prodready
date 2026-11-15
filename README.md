@@ -16,7 +16,7 @@
   <img alt="license" src="https://img.shields.io/badge/license-MIT-2dd4bf">
   <img alt="python" src="https://img.shields.io/badge/python-3.9%2B-38bdf8">
   <img alt="dependencies" src="https://img.shields.io/badge/dependencies-none-a78bfa">
-  <img alt="checks" src="https://img.shields.io/badge/checks-187-fbbf24">
+  <img alt="checks" src="https://img.shields.io/badge/checks-235-fbbf24">
   <img alt="telemetry" src="https://img.shields.io/badge/telemetry-none-34d399">
 </p>
 
@@ -95,10 +95,40 @@ The plugin also adds `/prodready-audit`, `/prodready-fix` and `/prodready-launch
 
 ## What was tested
 
-- **Install:** `claude plugin validate` passes. `claude plugin marketplace add` and `claude plugin install` from this repository succeed, and the plugin shows as enabled (version 1.0.0).
-- **Scanners:** 49 automated tests run on Linux, macOS and Windows with Python 3.9 and 3.13. Every planted problem in the nine sample apps is found, and the two clean sample apps produce no critical, high or medium findings.
+- **Install:** `claude plugin validate` passes. `claude plugin marketplace add` and `claude plugin install` from this repository succeed, and the plugin shows as enabled (version 1.0.0; the 1.1.0 additions are covered by the automated tests, the plugin was not reinstalled for them).
+- **Scanners:** 71 automated tests run on Linux, macOS and Windows with Python 3.9 and 3.13. Every planted problem in the eleven sample apps is found, and the three clean sample apps produce no critical, high or medium findings.
 - **A fresh Claude session using the installed skill:** a separate Claude agent, given only the installed skill and a copy of the Lovable sample app, followed the phases and produced the right verdict (BLOCKED) with the planted critical problems, without ever seeing a secret value in plain text. It also found six rough edges in the instructions (the `python3` command on Windows, how to produce the report, the order of the first three actions, grouping of repeated findings, what to do when the user already answered the scoping questions). Those are fixed in this version.
 - **Not tested yet:** a full headless `claude -p` run on a real app, uploading the zip to the Claude apps, and the fix phase (branch, commits, verification) driven by Claude on a real project.
+
+## New in 1.1: Laravel, tenants, money, speed and servers
+
+Seven additions, each with its own scanner and checks. Everything still runs locally, read-only, with the Python standard library.
+
+| # | Addition | What it does | Checks |
+|---|---|---|---|
+| 1 | **Laravel deep scanner** | Laravel 11 and later, Livewire 3, Eloquent, Sanctum and Spatie permissions: mass assignment, raw SQL, unescaped Blade output, Livewire properties and actions that trust the browser, tokens that never expire, roles handed out from input, CSRF and CORS, unsupported versions | `LARA-001` to `LARA-017` |
+| 2 | **Multi-tenant audit** | Finds company-owned tables, then checks whether one company can reach another's data: missing tenant scope, lookups by ID, tenant taken from the request, shared cache keys, `unique` rules, nullable tenant columns. Also reads Prisma schemas | `TEN-001` to `TEN-007` |
+| 3 | **Business logic audit** | Bookings, payments, wallets and balances: read-then-write without a lock, double booking, repeated requests, negative amounts, float money, prices sent by the client, queue jobs that run twice | `BIZ-001` to `BIZ-007` |
+| 4 | **Performance audit** | N+1 queries in loops and Blade views, whole-table loads, queries that cannot use an index, email sent inside the request, queue and cache drivers that do nothing in production, missing foreign key indexes | `PERF-007` to `PERF-012` |
+| 5 | **API security** | Every Laravel route with its middleware, whether it needs sign-in and whether it is rate limited (in the report as `inventory.laravel_routes`), plus records picked by ID with no ownership check | `API-020`, `API-021`, `AUTH-002` |
+| 6 | **Regression tests** | `generate_regression_tests.py` writes tests that fail before a fix and pass after it, and a route contract that fails if a fix removes or loosens a route | tool, no check |
+| 7 | **Production infrastructure audit** | nginx and Apache roots, TLS, `chmod 777`, database ports open to the internet, default passwords, scheduler and queue worker never started, no backup job, deploys without `--no-dev` | `INFRA-001` to `INFRA-009` |
+
+### Generate regression tests
+
+```bash
+# 1. scan and save the findings
+python skills/prodready/scripts/run_all.py ./my-app --out ./my-app/.prodready/findings.json
+# 2. write the tests (default folder: my-app/.prodready/regression)
+python skills/prodready/scripts/generate_regression_tests.py ./my-app
+# 3. before the fix the guard test fails; after the fix it passes
+python my-app/.prodready/regression/prodready_guard.py
+# Laravel: copy the PHP tests into tests/Feature and run them
+python skills/prodready/scripts/generate_regression_tests.py ./my-app --into-app
+php artisan test --filter=Prodready
+```
+
+The tests are a starting point: the unauthenticated-access, rate-limit and other-user's-record tests are built from your own routes, and the arrange steps use model factories you may need to adjust.
 
 ## Why this exists
 
@@ -145,7 +175,7 @@ The report opens with the verdict and three actions, then shows an access table 
 
 ## What it checks
 
-<p align="center"><img src="docs/images/categories.svg" alt="187 checks in 18 categories" width="100%"></p>
+<p align="center"><img src="docs/images/categories.svg" alt="235 checks in 22 categories" width="100%"></p>
 
 Every check has a plain-words explanation, why it matters, how to fix it and how to verify the fix. The full list is in [`references/checks/INDEX.md`](skills/prodready/references/checks/INDEX.md).
 
@@ -170,6 +200,7 @@ Severity means something: **critical** is "an anonymous person can read other pe
 | Stack | Depth |
 |---|---|
 | Supabase, Firebase | deep: policies, rules, storage, functions |
+| Laravel 11 and later, Livewire 3, Sanctum, Spatie permissions | deep: models, routes, Blade, jobs, multi-tenancy, money, infrastructure |
 | Next.js, Vite and React, Express, Prisma, Stripe | good |
 | Remix, SvelteKit, Nuxt, Django, Flask, FastAPI, Expo | basic |
 | Lovable, Bolt, v0, Replit, IDE agents | detection plus a playbook per builder |
@@ -205,8 +236,8 @@ Exit code 1 means a confirmed finding at or above the chosen severity.
 ```text
 skills/prodready/      the skill: SKILL.md, scripts/, references/, assets/
 commands/  agents/     optional Claude Code plugin extras
-fixtures/              nine sample apps with planted problems and expected results
-tests/                 49 tests (scanners, report, probe, packaging)
+fixtures/              eleven sample apps with planted problems and expected results
+tests/                 71 tests (scanners, report, probe, packaging, Laravel, regression tests)
 tools/                 maintainer scripts (package, generate references, demo)
 evals/                 prompts and a rubric for testing the skill itself
 docs/                  decisions, roadmap, authoring guide, images, sample report
@@ -307,10 +338,40 @@ python3 skills/prodready/scripts/run_all.py fixtures/lovable-supabase-vite --for
 
 ## ما الذي جُرِّب
 
-- **التثبيت:** `claude plugin validate` ينجح، وأمرا `marketplace add` و`install` من هذا المستودع ينجحان وتظهر الإضافة مفعّلة (الإصدار 1.0.0).
-- **الماسحات:** 49 اختباراً آلياً على Linux وmacOS وWindows بـ Python 3.9 و3.13. كل مشكلة مزروعة في التطبيقات النموذجية التسعة تُكتشف، والتطبيقان النظيفان لا يعطيان نتائج حرجة أو عالية أو متوسطة.
+- **التثبيت:** `claude plugin validate` ينجح، وأمرا `marketplace add` و`install` من هذا المستودع ينجحان وتظهر الإضافة مفعّلة (الإصدار 1.0.0؛ إضافات 1.1.0 مغطاة بالاختبارات الآلية ولم تُعد تثبيت الإضافة لها).
+- **الماسحات:** 71 اختباراً آلياً على Linux وmacOS وWindows بـ Python 3.9 و3.13. كل مشكلة مزروعة في التطبيقات النموذجية الأحد عشر تُكتشف، والتطبيقات النظيفة الثلاثة لا تعطي نتائج حرجة أو عالية أو متوسطة.
 - **جلسة Claude جديدة تستخدم المهارة المثبّتة:** وكيل Claude منفصل، لم يُعطَ إلا المهارة المثبّتة ونسخة من تطبيق Lovable النموذجي، اتّبع المراحل وخرج بالحكم الصحيح (BLOCKED) مع المشاكل الحرجة المزروعة، ولم يرَ أي قيمة سرية بنص صريح. ووجد ست نقاط خشنة في التعليمات (أمر `python3` على Windows، وطريقة إنتاج التقرير، وترتيب أول ثلاثة إجراءات، وتجميع النتائج المتكررة، وما يُفعل إذا أجاب المستخدم مسبقاً عن أسئلة التحديد). أُصلحت في هذا الإصدار.
 - **لم يُجرَّب بعد:** تشغيل كامل بـ `claude -p` على تطبيق حقيقي، ورفع الـ zip إلى تطبيقات Claude، ومرحلة الإصلاح (فرع والتزامات وتحقق) بقيادة Claude على مشروع حقيقي.
+
+## جديد في الإصدار 1.1: Laravel والمستأجرون والمال والأداء والسيرفرات
+
+سبع إضافات، لكل منها ماسح وفحوصات خاصة. كل شيء ما زال يعمل محلياً للقراءة فقط وبمكتبة Python القياسية.
+
+| # | الإضافة | ماذا تفعل | الفحوصات |
+|---|---|---|---|
+| 1 | **فاحص Laravel المتخصص** | Laravel 11 وما بعده وLivewire 3 وEloquent وSanctum وSpatie: Mass Assignment وSQL خام وطباعة Blade بلا تعقيم وخصائص Livewire وإجراءاتها التي تثق بالمتصفح وتوكنات لا تنتهي وأدوار تُمنح من المدخلات وCSRF وCORS ونسخ غير مدعومة | `LARA-001` إلى `LARA-017` |
+| 2 | **تدقيق تعدد المستأجرين** | يحدد الجداول التابعة للشركات ثم يفحص هل تستطيع شركة الوصول لبيانات أخرى: نطاق مستأجر مفقود، جلب بالمعرّف، مستأجر قادم من الطلب، مفاتيح كاش مشتركة، قواعد `unique`، أعمدة مستأجر تقبل الفراغ. ويقرأ Prisma أيضاً | `TEN-001` إلى `TEN-007` |
+| 3 | **تدقيق منطق الأعمال** | الحجوزات والمدفوعات والمحافظ والأرصدة: قراءة ثم كتابة بلا قفل، حجز مزدوج، تكرار الطلبات، مبالغ سالبة، مال بأرقام عشرية عائمة، أسعار يرسلها العميل، مهام طابور تعمل مرتين | `BIZ-001` إلى `BIZ-007` |
+| 4 | **تدقيق الأداء** | استعلامات N+1 في الحلقات وواجهات Blade، تحميل جداول كاملة، استعلامات لا تستفيد من فهرس، بريد يُرسل داخل الطلب، تعريفات Queue وCache لا تفيد في الإنتاج، مفاتيح أجنبية بلا فهارس | `PERF-007` إلى `PERF-012` |
+| 5 | **أمان الـ API** | كل مسار Laravel مع الـ Middleware: هل يتطلب تسجيل دخول وهل عليه حد للطلبات (في `inventory.laravel_routes`)، مع سجلات تُجلب بالمعرّف دون فحص الملكية | `API-020` و`API-021` و`AUTH-002` |
+| 6 | **اختبارات الانحدار** | `generate_regression_tests.py` يكتب اختبارات تفشل قبل الإصلاح وتنجح بعده، واختبار عقد المسارات الذي يفشل إذا حذف الإصلاح مساراً أو أضعف حمايته | أداة بلا فحص |
+| 7 | **تدقيق البنية التحتية للإنتاج** | جذر nginx وApache وTLS و`chmod 777` ومنافذ قواعد البيانات المفتوحة وكلمات المرور الافتراضية والـ scheduler وworker الطابور بلا تشغيل، ولا نسخ احتياطي، ونشر بلا `--no-dev` | `INFRA-001` إلى `INFRA-009` |
+
+### توليد اختبارات الانحدار
+
+```bash
+# 1. افحص واحفظ النتائج
+python skills/prodready/scripts/run_all.py ./my-app --out ./my-app/.prodready/findings.json
+# 2. اكتب الاختبارات (المجلد الافتراضي: my-app/.prodready/regression)
+python skills/prodready/scripts/generate_regression_tests.py ./my-app
+# 3. قبل الإصلاح يفشل اختبار الحارس، وبعده ينجح
+python my-app/.prodready/regression/prodready_guard.py
+# Laravel: انسخ اختبارات PHP إلى tests/Feature وشغّلها
+python skills/prodready/scripts/generate_regression_tests.py ./my-app --into-app
+php artisan test --filter=Prodready
+```
+
+الاختبارات نقطة بداية: اختبارات الوصول بلا تسجيل دخول وحد الطلبات وسجلات المستخدمين الآخرين مبنية من مساراتك أنت، وخطوات التجهيز تستخدم Factories قد تحتاج تعديلها.
 
 ## لماذا هذا المشروع
 

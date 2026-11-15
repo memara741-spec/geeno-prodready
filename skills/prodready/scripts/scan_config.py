@@ -219,6 +219,8 @@ def scan(root: str, stack: Optional[Dict[str, Any]], project: walker.Project) ->
 
     # DEP-004: health endpoint.
     has_health = any(re.search(r"(^|/)(health|healthz|ready|readyz|ping|status)(/|\.|$)", p) for p in paths if p.endswith((".ts", ".js", ".tsx", ".py", ".mjs"))) or any(re.search(r"[\"']/(?:api/)?(?:health|healthz|ping|ready)\b", project.read(p)) for p in paths if p.endswith((".js", ".ts", ".py")) and project.classify(project.get(p)) == "server")
+    if fw == "laravel" and (re.search(r"health\s*:\s*['\"]/", project.read("bootstrap/app.php")) or any(re.search(r"['\"]/(?:up|health|healthz)['\"]", project.read(p)) for p in paths if p.startswith("routes/") and p.endswith(".php"))):
+        has_health = True
     if (backend or fw == "nextjs") and not has_health:
         first = next((p for p in paths if p in ("package.json", "requirements.txt")), None)
         env.add(Finding(

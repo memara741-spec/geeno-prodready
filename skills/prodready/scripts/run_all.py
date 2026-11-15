@@ -25,7 +25,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import detect_stack  # noqa: E402
 from lib import catalog, findings, walker  # noqa: E402
 
-SCANNERS = ["scan_secrets", "scan_env", "scan_supabase", "scan_firebase", "scan_routes", "scan_payments", "scan_llm", "scan_frontend", "scan_config", "scan_deps", "scan_launch"]
+SCANNERS = ["scan_secrets", "scan_env", "scan_supabase", "scan_firebase", "scan_routes", "scan_payments", "scan_llm", "scan_frontend", "scan_config", "scan_deps", "scan_launch", "scan_laravel", "scan_tenancy", "scan_logic", "scan_performance", "scan_infra"]
 IMPLEMENTS: List[str] = []
 ALSO_EMITS: List[str] = []
 SARIF_LEVEL = {"critical": "error", "high": "error", "medium": "warning", "low": "note", "info": "note"}

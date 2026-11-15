@@ -23,9 +23,9 @@ from lib import walker  # noqa: E402
 
 FIXTURE_NAMES = [
     "lovable-supabase-vite", "nextjs-supabase-stripe", "nextjs-prisma-authjs", "firebase-react", "express-mongo-jwt",
-    "nextjs-ai-chat", "expo-supabase", "clean-nextjs-supabase", "clean-vite-firebase",
+    "nextjs-ai-chat", "expo-supabase", "clean-nextjs-supabase", "clean-vite-firebase", "laravel-multitenant", "clean-laravel",
 ]
-CLEAN_FIXTURES = ["clean-nextjs-supabase", "clean-vite-firebase"]
+CLEAN_FIXTURES = ["clean-nextjs-supabase", "clean-vite-firebase", "clean-laravel"]
 
 
 def fake(*parts: str) -> str:

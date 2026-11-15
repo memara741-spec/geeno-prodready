@@ -1,6 +1,6 @@
 # Launch posts (drafts)
 
-Honest numbers only: 187 checks, 49 tests, nine sample apps, no dependencies. Say what is not tested yet.
+Honest numbers only: 235 checks, 71 tests, eleven sample apps, no dependencies. Say what is not tested yet.
 
 ## Show HN / Reddit (r/ClaudeAI, r/LovableDev, r/SideProject)
 

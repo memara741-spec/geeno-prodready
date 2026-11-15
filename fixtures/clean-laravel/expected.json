@@ -1,0 +1,13 @@
+{
+  "stack": {
+    "framework": "laravel",
+    "database": "mysql",
+    "auth": "laravel-sanctum",
+    "hosting": "docker"
+  },
+  "must_find": [],
+  "must_not_find": [],
+  "max_false_positive_criticals": 0,
+  "max_severity": "medium",
+  "planted_secrets": []
+}
