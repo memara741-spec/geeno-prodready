@@ -1,6 +1,6 @@
 # Live production verification (PROD)
 
-What this covers: the 4 PROD checks. Read it when a finding in this category appears or when reviewing this area. After reading you can explain each finding in plain words, fix it and verify the fix.
+What this covers: the 6 PROD checks. Read it when a finding in this category appears or when reviewing this area. After reading you can explain each finding in plain words, fix it and verify the fix.
 Last checked: 2026-11-13. Platform claims were confirmed against vendor documentation on that date where a URL is given in the stack playbooks; claims without a URL are marked in the playbook.
 
 ### PROD-001 — Certificate invalid or close to expiry
@@ -64,6 +64,38 @@ Last checked: 2026-11-13. Platform claims were confirmed against vendor document
 **Fix:** Restart the process, then add alerting on the health report.
 
 **Verify:** The health report shows recent activity.
+
+**Owner action:** a human must do part of this outside the code; see `references/owner-actions/` and give the exact steps for the detected platform.
+
+### PROD-005 — Backup file is missing, stale, damaged or incomplete
+**Severity:** high · **Mode:** scan · **Applies to:** any database
+**Auto-fix:** owner
+
+**In plain words:** The newest backup is missing, too old, damaged or cut short.
+
+**How to detect:** Run `scripts/restore_drill.py` (or `scripts/run_all.py`). It reports this check with file, line and a redacted snippet. Open each location before reporting it.
+
+**Why it matters:** A backup that cannot be read is no backup; you find out during the disaster.
+
+**Fix:** Fix the backup job, store copies away from the server and alert when a backup is late or small.
+
+**Verify:** restore_drill.py reports no problem with the newest file.
+
+**Owner action:** a human must do part of this outside the code; see `references/owner-actions/` and give the exact steps for the detected platform.
+
+### PROD-006 — Restore rehearsal failed
+**Severity:** high · **Mode:** scan · **Applies to:** any database
+**Auto-fix:** owner
+
+**In plain words:** Restoring the backup into a scratch database failed.
+
+**How to detect:** Run `scripts/restore_drill.py` (or `scripts/run_all.py`). It reports this check with file, line and a redacted snippet. Open each location before reporting it.
+
+**Why it matters:** In a real incident the same failure costs hours or the data.
+
+**Fix:** Run the restore by hand, fix the error and keep the working commands in a runbook; rehearse every few months.
+
+**Verify:** The restore command and your verification command both exit 0.
 
 **Owner action:** a human must do part of this outside the code; see `references/owner-actions/` and give the exact steps for the detected platform.
 

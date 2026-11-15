@@ -31,16 +31,20 @@ EFFORT = {"auto": "small", "assisted": "medium", "owner": "owner", "none": "-"}
 WHO = {"auto": "Claude can fix this", "assisted": "Claude can fix this; you review and apply", "owner": "You need to do this in a dashboard", "none": "Nothing to fix"}
 
 
-def verdict(fs: List[Dict[str, Any]], accepted: Optional[List[str]] = None) -> Dict[str, Any]:
+def verdict(fs: List[Dict[str, Any]], accepted: Optional[List[str]] = None, scanners: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
     accepted = accepted or []
+    failed = [x["scanner"] for x in scanners or [] if x.get("status") == "failed"]
+    note = (" The audit is incomplete: %s failed to run." % ", ".join(failed)) if failed else ""
     live = [f for f in fs if f.get("status") not in ("ignored", "fixed", "dismissed") and f["confidence"] != "possible" or (f["severity"] in ("critical", "high") and f.get("status") not in ("ignored", "fixed", "dismissed"))]
     crit = [f for f in live if f["severity"] == "critical"]
     high = [f for f in live if f["severity"] == "high" and f["id"] not in accepted]
     med = [f for f in live if f["severity"] == "medium"]
     if crit:
-        return {"verdict": "BLOCKED", "why": "%d critical finding(s) are open: anyone can reach other people's data, spend your money or take over accounts." % len(crit), "blocking": crit + high}
+        return {"verdict": "BLOCKED", "why": "%d critical finding(s) are open: anyone can reach other people's data, spend your money or take over accounts.%s" % (len(crit), note), "blocking": crit + high, "incomplete": failed}
     if high:
-        return {"verdict": "BLOCKED", "why": "%d high-severity finding(s) are open and not accepted in writing." % len(high), "blocking": high}
+        return {"verdict": "BLOCKED", "why": "%d high-severity finding(s) are open and not accepted in writing.%s" % (len(high), note), "blocking": high, "incomplete": failed}
+    if failed:
+        return {"verdict": "INCOMPLETE", "why": "The audit did not finish, so no READY or LAUNCH WITH CAUTION verdict can be given.%s Fix the failure and run it again." % note, "blocking": [], "incomplete": failed}
     if med:
         return {"verdict": "LAUNCH WITH CAUTION", "why": "%d medium finding(s) remain; none blocks launch." % len(med), "blocking": []}
     return {"verdict": "READY", "why": "No open critical, high or medium findings.", "blocking": []}
@@ -75,7 +79,7 @@ def _matrix_rows(inv: Dict[str, Any]) -> List[str]:
 
 def render_md(doc: Dict[str, Any], extra: List[Dict[str, Any]], narrative: str, app_name: str, verification: Optional[Dict[str, Any]], accepted: List[str]) -> str:
     fs = findings.dedupe_dicts(doc["findings"] + extra)
-    v = verdict(fs, accepted)
+    v = verdict(fs, accepted, doc.get("scanners"))
     inv = doc.get("inventory") or {}
     stack = doc.get("stack") or {}
     s = findings.summarise(fs)
@@ -171,7 +175,7 @@ def render_md(doc: Dict[str, Any], extra: List[Dict[str, Any]], narrative: str, 
 CSS = ("body{font:16px/1.55 system-ui,sans-serif;max-width:60rem;margin:0 auto;padding:1rem 1rem 4rem;background:#fff;color:#1a1a1a}"
        "@media(prefers-color-scheme:dark){body{background:#14161a;color:#e8e8e8}pre,code{background:#23262d!important}th{background:#23262d!important}}"
        "h1,h2,h3{line-height:1.2}.v{font-size:2rem;font-weight:800;padding:.4rem 1rem;border-radius:.4rem;display:inline-block}"
-       ".BLOCKED{background:#b42318;color:#fff}.READY{background:#067647;color:#fff}.LAUNCH{background:#b54708;color:#fff}"
+       ".BLOCKED{background:#b42318;color:#fff}.READY{background:#067647;color:#fff}.LAUNCH{background:#b54708;color:#fff}.INCOMPLETE{background:#475467;color:#fff}"
        "pre,code{background:#f3f4f6;padding:.1rem .3rem;border-radius:.2rem;overflow-x:auto}pre{padding:.6rem}table{border-collapse:collapse;display:block;overflow-x:auto}"
        "td,th{border:1px solid #8884;padding:.3rem .6rem;text-align:start}th{background:#f3f4f6}.sev{font-weight:700;margin-inline-end:.4rem}"
        "@media print{body{max-width:none}}")
@@ -216,7 +220,7 @@ def render_html(md: str, lang: str, title: str) -> str:
         if in_list:
             out.append("</ul>")
             in_list = False
-        if raw.startswith("# ") and raw[2:] in ("BLOCKED", "READY", "LAUNCH WITH CAUTION"):
+        if raw.startswith("# ") and raw[2:] in ("BLOCKED", "READY", "LAUNCH WITH CAUTION", "INCOMPLETE"):
             out.append('<div class="v %s">%s</div>' % (raw[2:].split()[0], line[2:]))
         elif raw.startswith("#"):
             n = len(raw) - len(raw.lstrip("#"))

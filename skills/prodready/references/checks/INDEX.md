@@ -256,6 +256,8 @@ Every check, with default severity, mode and the script that implements it. Gene
 | [PROD-002](production-runtime.md#prod-002) | Plain HTTP not redirected to HTTPS, or old TLS accepted | high | scan | web | verify_production |
 | [PROD-003](production-runtime.md#prod-003) | Sensitive file or debug tool reachable on the live site | critical | scan | web | verify_production |
 | [PROD-004](production-runtime.md#prod-004) | Scheduler, queue or backup heartbeat is stale | medium | scan | laravel | verify_production |
+| [PROD-005](production-runtime.md#prod-005) | Backup file is missing, stale, damaged or incomplete | high | scan | any database | restore_drill |
+| [PROD-006](production-runtime.md#prod-006) | Restore rehearsal failed | high | scan | any database | restore_drill |
 
 ## Review-only checks
 

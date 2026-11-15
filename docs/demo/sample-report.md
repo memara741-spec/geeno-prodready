@@ -1,6 +1,6 @@
 # prodready report: Souq Local (fixture)
 
-**Date:** 2026-01-01 · **Tool version:** 1.2.0 · **Files scanned:** 25
+**Date:** 2026-01-01 · **Tool version:** 1.3.0 · **Files scanned:** 25
 **Audited:** automated scan of source files and configuration, plus code review. **Not audited:** anything configured only in dashboards, the live site, and areas listed in the appendix.
 
 ## Verdict

@@ -20,7 +20,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence
 from . import catalog
 from .redact import redact_text
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 TOOL = "prodready"
 
 SEVERITIES = ["info", "low", "medium", "high", "critical"]
@@ -31,6 +31,7 @@ EXIT_OK = 0
 EXIT_FINDINGS = 1
 EXIT_USAGE = 2
 EXIT_NO_ROOT = 3
+EXIT_SCANNER_FAILED = 4
 
 
 def severity_rank(sev: str) -> int:

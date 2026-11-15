@@ -147,3 +147,91 @@ def calls(body: str, names: str) -> Iterator[Tuple[str, str, int]]:
     """(name, args_text, offset) for calls matching the regex ``names``, e.g. ``shell_exec|exec``."""
     for m in re.finditer(r"(?:\\)?\b(%s)\s*\(" % names, body):
         yield m.group(1), _args(body, m.end() - 1), m.start()
+
+
+class ProjectFlow:
+    """Taint across classes: calls through ``$this``, typed properties and parameters, static calls, ``new X`` and
+    ``app(X::class)``, plus methods inherited from parents and traits. Still static: no dynamic dispatch, no
+    interface-to-implementation resolution unless exactly one class implements it."""
+
+    def __init__(self, pfs: List[phpscan.PhpFile]) -> None:
+        self.by_class: Dict[str, phpscan.PhpFile] = {}
+        for pf in pfs:
+            if pf.class_name and pf.class_name not in self.by_class:
+                self.by_class[pf.class_name] = pf
+        self.impl: Dict[str, List[str]] = {}
+        for name, pf in self.by_class.items():
+            for iface in re.findall(r"\bimplements\s+([\\\w,\s]+?)\s*\{", pf.bare):
+                for i in iface.split(","):
+                    self.impl.setdefault(i.strip().split("\\")[-1], []).append(name)
+
+    def _resolve(self, name: str) -> Optional[str]:
+        if name in self.by_class:
+            return name
+        impls = self.impl.get(name, [])
+        return impls[0] if len(impls) == 1 else None
+
+    def methods_of(self, cls: str, seen: Optional[Set[str]] = None) -> Dict[str, Tuple[phpscan.PhpFile, Dict]]:
+        seen = seen or set()
+        pf = self.by_class.get(cls)
+        if not pf or cls in seen:
+            return {}
+        seen.add(cls)
+        out: Dict[str, Tuple[phpscan.PhpFile, Dict]] = {}
+        for parent in [pf.extends] + list(pf.traits):
+            if parent:
+                out.update(self.methods_of(parent, seen))
+        for m in pf.methods():
+            out[m["name"]] = (pf, m)
+        return out
+
+    def props_of(self, pf: phpscan.PhpFile) -> Dict[str, str]:
+        out: Dict[str, str] = {}
+        for m in re.finditer(r"(?:(?:public|protected|private|readonly)\s+)*(?:\?)?([A-Z][\w\\]*)\s+\$(\w+)\s*[,;)=]", pf.bare):
+            cls = self._resolve(m.group(1).split("\\")[-1])
+            if cls:
+                out[m.group(2)] = cls
+        return out
+
+    def analyze(self) -> Dict[Tuple[str, str], Set[str]]:
+        seeds: Dict[Tuple[str, str], Set[str]] = {}
+        result: Dict[Tuple[str, str], Set[str]] = {}
+        props = {n: self.props_of(pf) for n, pf in self.by_class.items()}
+        for _ in range(6):
+            changed = False
+            for cname, pf in self.by_class.items():
+                own = self.methods_of(cname)
+                for m in pf.methods():
+                    key = (pf.rel, m["name"])
+                    tv = tainted_vars(m["body"], seeds.get(key, set()))
+                    result[key] = tv
+                    typed = {v: self._resolve(t.split("\\")[-1]) for t, v in re.findall(r"\b([A-Z][\w\\]*)\s+(\$\w+)", m["params"])}
+                    for call in re.finditer(r"\$this->(?:(\w+)->)?(\w+)\s*\(|\b([A-Z]\w+)::(\w+)\s*\(|new\s+([A-Z]\w+)\s*(?:\([^)]*\))?\s*\)?->(\w+)\s*\(|app\(\s*([A-Z]\w+)::class\s*\)->(\w+)\s*\(|(\$\w+)->(\w+)\s*\(", m["body"]):
+                        g = call.groups()
+                        if g[1] and not g[0]:
+                            target, mname = own, g[1]
+                        elif g[0] and g[1]:
+                            target, mname = self.methods_of(props.get(cname, {}).get(g[0], "")), g[1]
+                        elif g[2]:
+                            target, mname = self.methods_of(self._resolve(g[2]) or ""), g[3]
+                        elif g[4]:
+                            target, mname = self.methods_of(self._resolve(g[4]) or ""), g[5]
+                        elif g[6]:
+                            target, mname = self.methods_of(self._resolve(g[6]) or ""), g[7]
+                        elif g[8] and typed.get(g[8]):
+                            target, mname = self.methods_of(typed[g[8]] or ""), g[9]
+                        else:
+                            continue
+                        callee = target.get(mname)
+                        if not callee:
+                            continue
+                        cpf, cm = callee
+                        ckey = (cpf.rel, cm["name"])
+                        params = re.findall(r"\$\w+", cm["params"])
+                        for i, part in enumerate(_split(_args(m["body"], call.end() - 1))):
+                            if i < len(params) and expr_is_tainted(part, tv) and params[i] not in seeds.setdefault(ckey, set()):
+                                seeds[ckey].add(params[i])
+                                changed = True
+            if not changed:
+                break
+        return result

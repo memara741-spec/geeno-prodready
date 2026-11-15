@@ -89,8 +89,12 @@ def run(root: str, args: Any) -> Dict[str, Any]:
     ran: List[Dict[str, Any]] = []
     names = SCANNERS + (["scan_git_history"] if args.history else [])
     for name in names:
-        mod = importlib.import_module(name)
-        owned = [c for c in mod.IMPLEMENTS if selected(c, args.only, args.skip)]
+        try:
+            mod = importlib.import_module(name)
+        except Exception as exc:  # a scanner that cannot even load is a failed scanner, not a clean result
+            ran.append({"scanner": name, "status": "failed", "reason": "import failed: " + type(exc).__name__ + ": " + str(exc)[:120]})
+            continue
+        owned =[c for c in mod.IMPLEMENTS if selected(c, args.only, args.skip)]
         if (args.only or args.skip) and not owned and not any(selected(c, args.only, args.skip) for c in getattr(mod, "ALSO_EMITS", [])):
             ran.append({"scanner": name, "status": "skipped", "reason": "no selected check"})
             continue
@@ -120,6 +124,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     p.add_argument("--fail-on", choices=findings.SEVERITIES)
     p.add_argument("--format", choices=["json", "sarif", "summary"], default="json")
     p.add_argument("--history", action="store_true")
+    p.add_argument("--allow-scanner-failure", action="store_true", help="exit 0 even if a scanner crashed (the report still says INCOMPLETE)")
     p.add_argument("--allow-network", action="store_true")
     p.add_argument("--max-commits", type=int, default=2000)
     p.add_argument("--since", default=None)
@@ -138,6 +143,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         findings.emit_text(summary_text(doc), args.out)
     else:
         findings.emit(doc, args.out)
+    failed = [x["scanner"] for x in doc["scanners"] if x["status"] == "failed"]
+    if failed:
+        sys.stderr.write("prodready: scanner(s) failed: %s. The audit is INCOMPLETE and must not be reported as READY.\n" % ", ".join(failed))
+        if not args.allow_scanner_failure:
+            return findings.EXIT_SCANNER_FAILED
     if args.fail_on:
         floor = findings.severity_rank(args.fail_on)
         if any(f["confidence"] == "confirmed" and f.get("status") != "ignored" and findings.severity_rank(f["severity"]) >= floor for f in doc["findings"]):

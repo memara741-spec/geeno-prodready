@@ -35,3 +35,14 @@ Only what has evidence is listed as verified.
 - The scanners have not been compared with other tools on large real-world Laravel codebases, so false-positive and false-negative rates there are unknown.
 - The PHP engine is token-level, not a full AST.
 - A full headless Claude run on a real app, and the Claude-driven fix phase, have not been run.
+
+### Update for 1.3.0
+
+Verified by the automated suite (89 tests, CI on three operating systems): a failed scanner gives `INCOMPLETE` and exit code 4; data flow crosses classes, traits and typed properties; the restore drill passes a good backup, rejects a backup with missing tables and refuses to run a restore command without its flags; every generated PHP test passes `php -l`.
+
+Still not verified, and the reason a "95 out of 100" claim would be premature:
+
+- `ProdreadyPolicyTest.php` and `ProdreadyConcurrencyTest.php` have not been executed inside a real Laravel project against a real MySQL database.
+- `verify_production.py`, `profile_runtime.py` and `restore_drill.py` have not been run against a real staging environment or a hosted backup.
+- The PHP engine is still not a full AST.
+- No benchmark against other tools on large public Laravel projects.

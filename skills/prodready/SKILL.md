@@ -39,7 +39,7 @@ Write the report using `references/report/template.md`, saved as `PRODREADY_REPO
 
 Severity adjustments (explain each one in the report): raise one level for sensitive data (health, financial, identity, children, precise location, private messages); raise one level when the app is live; lower one level only when a compensating control demonstrably exists. Never lower a critical secrets or open-database finding because the app is small.
 
-Verdict: any open critical means `BLOCKED`. No critical but an open high not explicitly accepted by the owner in writing means `BLOCKED`. Only medium open means `LAUNCH WITH CAUTION`. Otherwise `READY`, always followed by the owner actions still open.
+Verdict: any open critical means `BLOCKED`. No critical but an open high not explicitly accepted by the owner in writing means `BLOCKED`. Only medium open means `LAUNCH WITH CAUTION`. Otherwise `READY`, always followed by the owner actions still open. If any scanner failed (the `scanners` list shows `failed`, or `run_all.py` exited 4), the verdict is `INCOMPLETE` unless critical or high findings already make it `BLOCKED`: say which scanner failed, fix or report it, and never present `READY`.
 
 ## Phase 5: Fix
 
@@ -49,7 +49,7 @@ Ask which findings to fix; offer all critical and high by default. Follow the fi
 
 Run `python3 scripts/verify_fixes.py <app_root> --baseline .prodready/findings.json`. For review-only findings, re-read the changed code and write a test where practical. Run the app's own build and tests. Add a Verification section with before and after. To leave tests behind, run `python scripts/generate_regression_tests.py <app_root> --findings .prodready/findings.json`: it writes a guard test (fails before the fix, passes after), a Laravel route contract and behaviour tests, and Node tests for open routes into `.prodready/regression/`; run them before and after the fix and tell the user which ones you could not run.
 
-Runtime checks (only with the owner's agreement, on their own copy or site): `python scripts/profile_runtime.py --base-url <local or staging url> --app-root <app_root> --i-own-this` measures queries, repeated queries, time and memory (install `assets/laravel/ProdreadyProfile.php` first); `python scripts/verify_production.py --url <site> --allow-network --i-own-this` checks the certificate, HTTPS redirect, exposed files and, with `assets/laravel/prodready-health.php`, the scheduler, queue and backups. Never run either without the owner saying the target is theirs.
+Runtime checks (only with the owner's agreement, on their own copy or site): `python scripts/profile_runtime.py --base-url <local or staging url> --app-root <app_root> --i-own-this` measures queries, repeated queries, time and memory (install `assets/laravel/ProdreadyProfile.php` first); `python scripts/verify_production.py --url <site> --allow-network --i-own-this` checks the certificate, HTTPS redirect, exposed files and, with `assets/laravel/prodready-health.php`, the scheduler, queue and backups. Never run either without the owner saying the target is theirs. To check a backup, run `python scripts/restore_drill.py --backup <file> --app-root <app_root>`; add `--restore-cmd ... --run-restore --i-own-this` only when the owner gives a command that targets a scratch database.
 
 ## Phase 7: Launch gate
 

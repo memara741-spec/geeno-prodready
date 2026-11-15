@@ -7,7 +7,7 @@
       "name": "prodready",
       "source": "./",
       "description": "Pre-launch production readiness and security audit for apps built with AI builders and coding agents.",
-      "version": "1.2.0"
+      "version": "1.3.0"
     }
   ]
 }

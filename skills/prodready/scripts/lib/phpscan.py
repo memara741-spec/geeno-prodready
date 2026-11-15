@@ -96,7 +96,7 @@ class PhpFile:
 
     @property
     def class_name(self) -> str:
-        m = re.search(r"\b(?:final\s+|abstract\s+)*class\s+(\w+)", self.bare)
+        m = re.search(r"\b(?:final\s+|abstract\s+)*(?:class|trait)\s+(\w+)", self.bare)
         return m.group(1) if m else ""
 
     @property

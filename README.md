@@ -16,7 +16,7 @@
   <img alt="license" src="https://img.shields.io/badge/license-MIT-2dd4bf">
   <img alt="python" src="https://img.shields.io/badge/python-3.9%2B-38bdf8">
   <img alt="dependencies" src="https://img.shields.io/badge/dependencies-none-a78bfa">
-  <img alt="checks" src="https://img.shields.io/badge/checks-250-fbbf24">
+  <img alt="checks" src="https://img.shields.io/badge/checks-252-fbbf24">
   <img alt="telemetry" src="https://img.shields.io/badge/telemetry-none-34d399">
 </p>
 
@@ -96,7 +96,7 @@ The plugin also adds `/prodready-audit`, `/prodready-fix` and `/prodready-launch
 ## What was tested
 
 - **Install:** `claude plugin validate` passes. `claude plugin marketplace add` and `claude plugin install` from this repository succeed, and the plugin shows as enabled (version 1.0.0; the 1.1.0 additions are covered by the automated tests, the plugin was not reinstalled for them).
-- **Scanners:** 82 automated tests run on Linux, macOS and Windows with Python 3.9 and 3.13. Every planted problem in the eleven sample apps is found, and the three clean sample apps produce no critical, high or medium findings.
+- **Scanners:** 89 automated tests run on Linux, macOS and Windows with Python 3.9 and 3.13. Every planted problem in the eleven sample apps is found, and the three clean sample apps produce no critical, high or medium findings.
 - **A fresh Claude session using the installed skill:** a separate Claude agent, given only the installed skill and a copy of the Lovable sample app, followed the phases and produced the right verdict (BLOCKED) with the planted critical problems, without ever seeing a secret value in plain text. It also found six rough edges in the instructions (the `python3` command on Windows, how to produce the report, the order of the first three actions, grouping of repeated findings, what to do when the user already answered the scoping questions). Those are fixed in this version.
 - **Not tested yet:** a full headless `claude -p` run on a real app, uploading the zip to the Claude apps, and the fix phase (branch, commits, verification) driven by Claude on a real project.
 
@@ -160,6 +160,28 @@ php artisan test --filter=Prodready
 
 The runtime tools never send anything but GET and HEAD, never store response bodies and refuse to run without `--i-own-this`. Both were tested against a local stub server in the test suite; they were not run against a real production site.
 
+## New in 1.3: closing the gaps
+
+A review of 1.2 listed five weaknesses. Here is what changed, and what is still open.
+
+| Priority | Gap | What changed | Still open |
+|---|---|---|---|
+| P0 | A crashed scanner could still produce `READY` | A scanner that fails or cannot load now makes the verdict `INCOMPLETE`, `run_all.py` exits 4, and `verify_fixes.py` refuses to mark anything fixed. Critical and high findings still give `BLOCKED`. | None |
+| P1 | PHP analysis was weak across files | Data flow now crosses classes: typed properties and parameters, static calls, `new X`, `app(X::class)`, parents, traits, single-implementation interfaces | Still not a full AST: no dynamic calls, no container bindings, no multiple implementations |
+| P1 | Policies were read, not run | `ProdreadyPolicyTest.php` executes every policy through the Gate with an owner and another user on real records | Generated, linted with `php -l`, **not yet run by the maintainers inside a real Laravel project** |
+| P1 | No real concurrency test | `ProdreadyConcurrencyTest.php` sends identical money requests from parallel PHP processes against MySQL or PostgreSQL | Same: generated and linted, **not yet run against a real database** |
+| P2 | Production tools only tested on a stub | `restore_drill.py` checks the newest backup (age, readability, completeness, expected tables) and rehearses your own restore command on a scratch database | Tested on local files and commands, **not on a real staging environment or hosted backup** |
+
+```bash
+# Check the newest backup and rehearse a restore into a scratch database
+python skills/prodready/scripts/restore_drill.py --backup storage/app/backups/latest.zip --app-root ./my-app \
+  --restore-cmd "mysql -h 127.0.0.1 -u root scratch_db < {file}" --verify-cmd "mysql -h 127.0.0.1 -u root scratch_db -e 'select count(*) from users'" \
+  --run-restore --i-own-this
+
+# Run the parallel double-spend test (needs a MySQL or PostgreSQL scratch database in .env.testing)
+php artisan test --filter=ProdreadyConcurrencyTest
+```
+
 ## Why this exists
 
 People now ship real products built with AI tools. The demo works, so the app goes live with real users, real personal data and real payments. A senior engineer would catch a short list of familiar problems in a review. The people who built these apps usually cannot, and "add authentication" or "follow OWASP" is advice they cannot map to their own code.
@@ -205,7 +227,7 @@ The report opens with the verdict and three actions, then shows an access table 
 
 ## What it checks
 
-<p align="center"><img src="docs/images/categories.svg" alt="250 checks in 25 categories" width="100%"></p>
+<p align="center"><img src="docs/images/categories.svg" alt="252 checks in 25 categories" width="100%"></p>
 
 Every check has a plain-words explanation, why it matters, how to fix it and how to verify the fix. The full list is in [`references/checks/INDEX.md`](skills/prodready/references/checks/INDEX.md).
 
@@ -267,7 +289,7 @@ Exit code 1 means a confirmed finding at or above the chosen severity.
 skills/prodready/      the skill: SKILL.md, scripts/, references/, assets/
 commands/  agents/     optional Claude Code plugin extras
 fixtures/              eleven sample apps with planted problems and expected results
-tests/                 82 tests (scanners, report, probe, packaging, Laravel, runtime tools, regression tests)
+tests/                 89 tests (scanners, report, probe, packaging, Laravel, runtime tools, regression tests)
 tools/                 maintainer scripts (package, generate references, demo)
 evals/                 prompts and a rubric for testing the skill itself
 docs/                  decisions, roadmap, authoring guide, images, sample report
@@ -369,7 +391,7 @@ python3 skills/prodready/scripts/run_all.py fixtures/lovable-supabase-vite --for
 ## ما الذي جُرِّب
 
 - **التثبيت:** `claude plugin validate` ينجح، وأمرا `marketplace add` و`install` من هذا المستودع ينجحان وتظهر الإضافة مفعّلة (الإصدار 1.0.0؛ إضافات 1.1.0 مغطاة بالاختبارات الآلية ولم تُعد تثبيت الإضافة لها).
-- **الماسحات:** 82 اختباراً آلياً على Linux وmacOS وWindows بـ Python 3.9 و3.13. كل مشكلة مزروعة في التطبيقات النموذجية الأحد عشر تُكتشف، والتطبيقات النظيفة الثلاثة لا تعطي نتائج حرجة أو عالية أو متوسطة.
+- **الماسحات:** 89 اختباراً آلياً على Linux وmacOS وWindows بـ Python 3.9 و3.13. كل مشكلة مزروعة في التطبيقات النموذجية الأحد عشر تُكتشف، والتطبيقات النظيفة الثلاثة لا تعطي نتائج حرجة أو عالية أو متوسطة.
 - **جلسة Claude جديدة تستخدم المهارة المثبّتة:** وكيل Claude منفصل، لم يُعطَ إلا المهارة المثبّتة ونسخة من تطبيق Lovable النموذجي، اتّبع المراحل وخرج بالحكم الصحيح (BLOCKED) مع المشاكل الحرجة المزروعة، ولم يرَ أي قيمة سرية بنص صريح. ووجد ست نقاط خشنة في التعليمات (أمر `python3` على Windows، وطريقة إنتاج التقرير، وترتيب أول ثلاثة إجراءات، وتجميع النتائج المتكررة، وما يُفعل إذا أجاب المستخدم مسبقاً عن أسئلة التحديد). أُصلحت في هذا الإصدار.
 - **لم يُجرَّب بعد:** تشغيل كامل بـ `claude -p` على تطبيق حقيقي، ورفع الـ zip إلى تطبيقات Claude، ومرحلة الإصلاح (فرع والتزامات وتحقق) بقيادة Claude على مشروع حقيقي.
 
@@ -432,6 +454,28 @@ php artisan test --filter=Prodready
 ```
 
 أدوات التشغيل الحي لا ترسل إلا GET وHEAD ولا تخزّن محتوى الاستجابات وترفض العمل بلا `--i-own-this`. جُرّبت ضمن اختبارات المشروع على خادم محلي وهمي، ولم تُشغَّل على موقع إنتاج حقيقي.
+
+## جديد في الإصدار 1.3: سد الثغرات
+
+مراجعة للإصدار 1.2 حدّدت خمس نقاط ضعف. هذا ما تغيّر وما بقي مفتوحاً.
+
+| الأولوية | الثغرة | ما تغيّر | ما زال مفتوحاً |
+|---|---|---|---|
+| P0 | تعطّل ماسح قد يُنتج حكم `READY` | أي ماسح يفشل أو لا يُحمَّل يجعل الحكم `INCOMPLETE`، و`run_all.py` يخرج بالرمز 4، و`verify_fixes.py` يرفض اعتبار أي شيء مُصلَحاً. وتبقى النتائج الحرجة والعالية تعطي `BLOCKED`. | لا شيء |
+| P1 | تحليل PHP ضعيف عبر الملفات | تتبع البيانات يعبر الآن الأصناف: الخصائص والمعاملات ذات النوع، والاستدعاءات الثابتة، و`new X`، و`app(X::class)`، والأصناف الأم والـ Traits والواجهات ذات تنفيذ واحد | ليس AST كاملاً: لا استدعاءات ديناميكية ولا ربط حاوية ولا تنفيذات متعددة |
+| P1 | السياسات تُقرأ ولا تُشغَّل | `ProdreadyPolicyTest.php` ينفّذ كل سياسة عبر الـ Gate بمالك ومستخدم آخر على سجلات حقيقية | مولَّد ومفحوص بـ `php -l`، **ولم يشغّله المطوّر بعد داخل مشروع Laravel حقيقي** |
+| P1 | لا اختبار تزامن حقيقي | `ProdreadyConcurrencyTest.php` يرسل طلبات مالية متطابقة من عمليات PHP متوازية على MySQL أو PostgreSQL | مثله: مولَّد ومفحوص، **ولم يُشغَّل على قاعدة بيانات حقيقية** |
+| P2 | أدوات الإنتاج جُرّبت على خادم وهمي فقط | `restore_drill.py` يفحص أحدث نسخة احتياطية (العمر والقراءة والاكتمال والجداول المتوقعة) ويجرّب أمر الاستعادة الذي تكتبه على قاعدة بيانات تجريبية | جُرّب على ملفات وأوامر محلية، **ولم يُجرَّب على بيئة staging حقيقية أو نسخ مستضافة** |
+
+```bash
+# فحص أحدث نسخة احتياطية وتجربة استعادتها في قاعدة بيانات تجريبية
+python skills/prodready/scripts/restore_drill.py --backup storage/app/backups/latest.zip --app-root ./my-app \
+  --restore-cmd "mysql -h 127.0.0.1 -u root scratch_db < {file}" --verify-cmd "mysql -h 127.0.0.1 -u root scratch_db -e 'select count(*) from users'" \
+  --run-restore --i-own-this
+
+# تشغيل اختبار الإنفاق المزدوج المتوازي (يحتاج قاعدة MySQL أو PostgreSQL تجريبية في .env.testing)
+php artisan test --filter=ProdreadyConcurrencyTest
+```
 
 ## لماذا هذا المشروع
 

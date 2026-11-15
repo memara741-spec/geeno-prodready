@@ -298,6 +298,8 @@ PROD-001|high|scan|owner|web|verify_production|Certificate invalid or close to e
 PROD-002|high|scan|owner|web|verify_production|Plain HTTP not redirected to HTTPS, or old TLS accepted
 PROD-003|critical|scan|assisted+owner|web|verify_production|Sensitive file or debug tool reachable on the live site
 PROD-004|medium|scan|owner|laravel|verify_production|Scheduler, queue or backup heartbeat is stale
+PROD-005|high|scan|owner|any database|restore_drill|Backup file is missing, stale, damaged or incomplete
+PROD-006|high|scan|owner|any database|restore_drill|Restore rehearsal failed
 """
 
 

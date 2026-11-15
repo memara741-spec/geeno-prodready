@@ -72,9 +72,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     baseline = findings.load(args.baseline)
     current = run_all.run(root, args)
     result = compare(baseline, current)
+    failed = [x["scanner"] for x in current.get("scanners", []) if x["status"] == "failed"]
+    result["incomplete"] = failed
     out = args.out or os.path.join(root, ".prodready", "verification.json")
     findings.write_text(out, findings.dumps(result))
     findings.emit_text(table(result))
+    if failed:
+        sys.stderr.write("prodready: scanner(s) failed: %s. 'Fixed' cannot be trusted because those scanners did not run.\n" % ", ".join(failed))
+        return findings.EXIT_SCANNER_FAILED
     if args.strict and args.targets:
         bad = [r for r in result["results"] if (r["id"] in args.targets or r["check_id"] in args.targets) and r["state"] != "fixed"]
         if bad:

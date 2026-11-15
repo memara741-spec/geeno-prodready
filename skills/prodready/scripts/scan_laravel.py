@@ -72,9 +72,10 @@ def scan(root: str, stack: Optional[Dict[str, Any]], project: walker.Project) ->
     _ct: Dict[str, Any] = {}
 
     def ct_of(pf: phpscan.PhpFile) -> Dict[str, Any]:
-        if pf.rel not in _ct:
-            _ct[pf.rel] = phpflow.class_taint(pf)
-        return _ct[pf.rel]
+        if not _ct:
+            for (rel, name), tv in phpflow.ProjectFlow(pfs).analyze().items():
+                _ct.setdefault(rel, {})[name] = tv
+        return _ct.get(pf.rel, {})
 
     def add(check: str, pf: phpscan.PhpFile, offset: int, message: str, confidence: str = "likely", detail: str = "", fix: str = "", severity: Optional[str] = None, subject: Optional[Dict[str, str]] = None) -> None:
         line = pf.line(offset)
@@ -229,7 +230,7 @@ def scan(root: str, stack: Optional[Dict[str, Any]], project: walker.Project) ->
                 if phpflow.reaches(a, tainted) and not re.search(r"authorize\w*\s*\(|Gate::|hasRole|hasPermissionTo|->can\s*\(|hasAnyRole", body):
                     add("LARA-009", pf, meth["body_start"] + m.start(), "A role or permission is handed out from request input with no check that the caller may do that. Any signed-in user can make themselves an administrator.", "likely",
                         subject={"kind": "method", "name": pf.rel + "::" + meth["name"]}, fix="Authorise the caller (`$this->authorize('assign-roles')`) and validate the role against a fixed list with `Rule::in([...])`.")
-            for m in re.finditer(r"\b(shell_exec|exec|system|passthru|proc_open|popen|eval|unserialize|assert|Process::fromShellCommandline|Process::run)\s*\(([^;]*)\)", body):
+            for m in re.finditer(r"(?<![\w>:$])(shell_exec|exec|system|passthru|proc_open|popen|eval|unserialize|assert|Process::fromShellCommandline|Process::run)\s*\(([^;]*)\)", body):
                 a = m.group(2)
                 if taint_src.search(a) or any(re.search(re.escape(t) + r"\b", a) for t in tainted):
                     add("LARA-012", pf, meth["body_start"] + m.start(), "Request input reaches `%s()`. An attacker can run commands on your server or trigger code execution through crafted data." % m.group(1), "confirmed" if taint_src.search(a) else "likely",

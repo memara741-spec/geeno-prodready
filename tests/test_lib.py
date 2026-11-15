@@ -279,7 +279,7 @@ class FindingsModel(unittest.TestCase):
 
 class Catalog(unittest.TestCase):
     def test_count_and_fields(self):
-        self.assertEqual(len(catalog.CHECKS), 250)
+        self.assertEqual(len(catalog.CHECKS), 252)
         for c in catalog.CHECKS.values():
             self.assertIn(c.severity, findings.SEVERITIES, c.id)
             self.assertIn(c.mode, ("scan", "review", "scan+review"), c.id)

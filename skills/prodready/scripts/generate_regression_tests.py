@@ -18,6 +18,10 @@ What it writes:
                                        records through the model or show routes.
   ProdreadyFinancialIntegrityTest.php  Laravel. Sends each money request twice for an account that can afford it
                                        once; fails on a negative balance or, for transfers, a changed total.
+  ProdreadyPolicyTest.php              Laravel. Runs every policy through the Gate on real users and records: the
+                                       owner must be allowed, another user denied.
+  ProdreadyConcurrencyTest.php         Laravel 11+. Fires identical money requests from parallel PHP processes against
+                                       MySQL or PostgreSQL; at most one may succeed and no balance may go negative.
   prodready.regression.test.mjs        Node. Unauthenticated access tests (AUTH-002) for JavaScript servers,
                                        using node:test and fetch against BASE_URL.
   README.md                            How to run them.
@@ -39,7 +43,7 @@ from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from lib import catalog, findings, phpscan, regen_laravel, walker  # noqa: E402
+from lib import catalog, findings, phpscan, regen_laravel, regen_laravel2, walker  # noqa: E402
 
 IMPLEMENTS: List[str] = []
 ALSO_EMITS: List[str] = []
@@ -302,6 +306,8 @@ def readme(app_name: str, files: List[str]) -> str:
         "| `ProdreadyFindingsTest.php` | Unauthenticated access, rate limits and other users' records. Copy to `tests/Feature/`. Check the arrange steps. | `php artisan test --filter=ProdreadyFindingsTest` |",
         "| `ProdreadyTenantIsolationTest.php` | Two tenants: tenant A must never see tenant B rows through the model or show routes. | `php artisan test --filter=ProdreadyTenantIsolationTest` |",
         "| `ProdreadyFinancialIntegrityTest.php` | Same money request twice: no negative balance (double spend); for transfers the total stays equal. | `php artisan test --filter=ProdreadyFinancialIntegrityTest` |",
+        "| `ProdreadyPolicyTest.php` | Every policy executed on real users and records (owner allowed, other user denied). | `php artisan test --filter=ProdreadyPolicyTest` |",
+        "| `ProdreadyConcurrencyTest.php` | Parallel identical money requests on a real MySQL or PostgreSQL scratch database. | `php artisan test --filter=ProdreadyConcurrencyTest` |",
         "| `prodready.regression.test.mjs` | Unauthenticated access for JavaScript servers. | `BASE_URL=http://localhost:3000 node --test prodready.regression.test.mjs` |", "",
         "Generated here: %s." % ", ".join("`%s`" % f for f in files), "",
         "The route contract test records the routes as they were when the file was generated. If you add or remove a route on purpose, generate the tests again.", "",
@@ -346,6 +352,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         put("ProdreadyFindingsTest.php", findings_php(selected, project))
         put("ProdreadyTenantIsolationTest.php", regen_laravel.tenant_php(project))
         put("ProdreadyFinancialIntegrityTest.php", regen_laravel.financial_php(project))
+        put("ProdreadyPolicyTest.php", regen_laravel2.policy_php(project))
+        ctx = regen_laravel2.money_context(project)
+        if ctx:
+            put("ProdreadyConcurrencyTest.php", regen_laravel2.concurrency_php(project, ctx[2], ctx[0], ctx[1]))
     node = node_test(selected)
     if node and not phpscan.is_laravel(project):
         put("prodready.regression.test.mjs", node)
