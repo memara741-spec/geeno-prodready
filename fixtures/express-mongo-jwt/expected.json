@@ -1,0 +1,182 @@
+{
+  "stack": {
+    "framework": "express",
+    "database": "mongodb",
+    "auth": "custom-jwt",
+    "hosting": "docker"
+  },
+  "must_find": [
+    {
+      "check_id": "SEC-010",
+      "file": "src/routes/auth.js"
+    },
+    {
+      "check_id": "AUTH-005",
+      "file": "src/middleware/auth.js"
+    },
+    {
+      "check_id": "PRIV-005",
+      "file": "src/routes/auth.js"
+    },
+    {
+      "check_id": "AUTH-010",
+      "file": "src/routes/auth.js"
+    },
+    {
+      "check_id": "AUTH-007",
+      "file": "src/routes/auth.js"
+    },
+    {
+      "check_id": "AUTH-012",
+      "file": "src/routes/auth.js"
+    },
+    {
+      "check_id": "AUTH-017",
+      "file": "src/routes/auth.js"
+    },
+    {
+      "check_id": "AUTH-018",
+      "file": "src/routes/auth.js"
+    },
+    {
+      "check_id": "API-003",
+      "file": "src/server.js"
+    },
+    {
+      "check_id": "API-004",
+      "file": "src/server.js"
+    },
+    {
+      "check_id": "API-009",
+      "file": "src/server.js"
+    },
+    {
+      "check_id": "API-015",
+      "file": "src/routes/files.js"
+    },
+    {
+      "check_id": "API-016",
+      "file": "src/routes/files.js"
+    },
+    {
+      "check_id": "UP-001",
+      "file": "src/routes/files.js"
+    },
+    {
+      "check_id": "UP-003",
+      "file": "src/routes/files.js"
+    },
+    {
+      "check_id": "DB-013",
+      "file": "src/routes/users.js"
+    },
+    {
+      "check_id": "AUTH-002",
+      "file": "src/routes/users.js"
+    },
+    {
+      "check_id": "AUTH-003",
+      "file": "src/server.js"
+    },
+    {
+      "check_id": "API-008",
+      "file": "src/routes/users.js"
+    },
+    {
+      "check_id": "PERF-001",
+      "file": "src/routes/users.js"
+    },
+    {
+      "check_id": "API-006",
+      "file": "src/routes/import.js"
+    },
+    {
+      "check_id": "REL-001",
+      "file": "src/routes/import.js"
+    },
+    {
+      "check_id": "REL-002",
+      "file": "src/routes/import.js"
+    },
+    {
+      "check_id": "API-007",
+      "file": "src/routes/webhooks.js"
+    },
+    {
+      "check_id": "API-011",
+      "file": "src/server.js"
+    },
+    {
+      "check_id": "API-012",
+      "file": "src/routes/admin.js"
+    },
+    {
+      "check_id": "API-018",
+      "file": "src/routes/admin.js"
+    },
+    {
+      "check_id": "OBS-002",
+      "file": "src/routes/admin.js"
+    },
+    {
+      "check_id": "DEP-001",
+      "file": "package.json"
+    },
+    {
+      "check_id": "DEP-001",
+      "file": "Dockerfile"
+    },
+    {
+      "check_id": "DEP-009",
+      "file": "Dockerfile"
+    },
+    {
+      "check_id": "DEP-004"
+    },
+    {
+      "check_id": "DEP-006"
+    },
+    {
+      "check_id": "HDR-006",
+      "file": "src/server.js"
+    },
+    {
+      "check_id": "API-002"
+    },
+    {
+      "check_id": "DEPS-001"
+    },
+    {
+      "check_id": "DEPS-005"
+    },
+    {
+      "check_id": "SEC-004"
+    }
+  ],
+  "review_only": [
+    {
+      "check_id": "AUTH-011",
+      "file": "src/routes/auth.js",
+      "note": "reset token is a timestamp, never expires and is returned in the response"
+    },
+    {
+      "check_id": "API-005",
+      "file": "src/routes/users.js",
+      "note": "any caller can update any user by id"
+    }
+  ],
+  "must_not_find": [
+    {
+      "check_id": "SEC-002",
+      "file": ".env",
+      "note": "only a localhost database URL without credentials and a port"
+    },
+    {
+      "check_id": "AUTH-002",
+      "file": "src/routes/files.js",
+      "note": "mounted after the auth middleware (its weakness is reported as AUTH-005)"
+    }
+  ],
+  "max_false_positive_criticals": 0,
+  "planted_secrets": []
+}

@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Build output of this repository
+/dist/
+.prodready/
+
+# Local environment files of this repository (fixtures are handled below)
+/.env
+/.env.*
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Node (only the clean fixture is ever installed)
+node_modules/
+fixtures/clean-nextjs-supabase/.next/
+
+# Fixtures are static inputs for the scanners. Their env files, lockfiles and
+# the one planted node_modules package are test data and must stay tracked.
+!fixtures/**/.env
+!fixtures/**/.env.*
+!fixtures/nextjs-prisma-authjs/node_modules/
+!fixtures/nextjs-prisma-authjs/node_modules/**

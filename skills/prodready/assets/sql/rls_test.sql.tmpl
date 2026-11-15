@@ -1,0 +1,22 @@
+-- pgTAP cross-user test for {{SCHEMA}}.{{TABLE}}. Run with `supabase test db` against a development database.
+begin;
+select plan(4);
+
+insert into auth.users (id, email) values
+  ('00000000-0000-0000-0000-00000000000a', 'a@test.invalid'),
+  ('00000000-0000-0000-0000-00000000000b', 'b@test.invalid');
+insert into {{SCHEMA}}.{{TABLE}} ({{OWNER_COLUMN}}) values
+  ('00000000-0000-0000-0000-00000000000a'), ('00000000-0000-0000-0000-00000000000b');
+
+set local role authenticated;
+set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000a", "role": "authenticated"}';
+
+select is((select count(*) from {{SCHEMA}}.{{TABLE}}), 1::bigint, 'user A sees only their own rows');
+select is_empty($$ update {{SCHEMA}}.{{TABLE}} set {{OWNER_COLUMN}} = {{OWNER_COLUMN}} where {{OWNER_COLUMN}} = '00000000-0000-0000-0000-00000000000b' returning 1 $$, 'user A cannot update user B rows');
+select throws_ok($$ insert into {{SCHEMA}}.{{TABLE}} ({{OWNER_COLUMN}}) values ('00000000-0000-0000-0000-00000000000b') $$, '42501', null, 'user A cannot insert a row for user B');
+
+set local role anon;
+select is((select count(*) from {{SCHEMA}}.{{TABLE}}), 0::bigint, 'anonymous visitors see no rows');
+
+select * from finish();
+rollback;

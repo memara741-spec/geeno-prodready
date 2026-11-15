@@ -1,0 +1,632 @@
+<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>prodready report</title><style>body{font:16px/1.55 system-ui,sans-serif;max-width:60rem;margin:0 auto;padding:1rem 1rem 4rem;background:#fff;color:#1a1a1a}@media(prefers-color-scheme:dark){body{background:#14161a;color:#e8e8e8}pre,code{background:#23262d!important}th{background:#23262d!important}}h1,h2,h3{line-height:1.2}.v{font-size:2rem;font-weight:800;padding:.4rem 1rem;border-radius:.4rem;display:inline-block}.BLOCKED{background:#b42318;color:#fff}.READY{background:#067647;color:#fff}.LAUNCH{background:#b54708;color:#fff}pre,code{background:#f3f4f6;padding:.1rem .3rem;border-radius:.2rem;overflow-x:auto}pre{padding:.6rem}table{border-collapse:collapse;display:block;overflow-x:auto}td,th{border:1px solid #8884;padding:.3rem .6rem;text-align:start}th{background:#f3f4f6}.sev{font-weight:700;margin-inline-end:.4rem}@media print{body{max-width:none}}</style></head><body><h1>prodready report: Souq Local (fixture)</h1>
+<p><strong>Date:</strong> 2026-01-01 · <strong>Tool version:</strong> 1.0.0 · <strong>Files scanned:</strong> 25</p>
+<p><strong>Audited:</strong> automated scan of source files and configuration, plus code review. <strong>Not audited:</strong> anything configured only in dashboards, the live site, and areas listed in the appendix.</p>
+<h2>Verdict</h2>
+<div class="v BLOCKED">BLOCKED</div>
+<p>11 critical finding(s) are open: anyone can reach other people&#x27;s data, spend your money or take over accounts.</p>
+<h2>The three things to do first</h2>
+<p>1. Anyone on the internet can read and change every row in <code>profiles</code>, because the table has no access rules switched on. (<code>DB-001:supabase/migrations/20240101000000_init.sql:3</code>)</p>
+<p>2. Anyone on the internet can read, add, change and delete rows in <code>orders</code> without signing in. The access rule is switched on but lets everyone through. (<code>DB-002:supabase/migrations/20240101000000_init.sql:35</code>)</p>
+<p>3. The rule on <code>reviews</code> decides access from profile data that users can edit themselves, so any user can grant themselves that access. (<code>DB-005:supabase/migrations/20240110000000_accounts.sql:19</code>)</p>
+<h2>Summary</h2>
+<table>
+<tr><th>Severity</th><th>Open</th></tr>
+<tr><td>critical</td><td>11</td></tr>
+<tr><td>high</td><td>15</td></tr>
+<tr><td>medium</td><td>25</td></tr>
+<tr><td>low</td><td>17</td></tr>
+<tr><td>info</td><td>3</td></tr>
+</table>
+<p>By category: api 6, auth 4, database 16, dependencies 1, deploy 4, email 2, frontend 7, headers 4, launch 7, observability 1, payments 1, performance 3, privacy 3, reliability 1, secrets 7, testing 3, uploads 1</p>
+<h2>Who can access what</h2>
+<table>
+<tr><th>Table</th><th>Anyone can read</th><th>Anyone can change</th><th>Signed-in users can read</th><th>Signed-in users can change</th></tr>
+<tr><td>public.accounts</td><td>none</td><td>no</td><td>own rows</td><td>own rows</td></tr>
+<tr><td>public.listings</td><td><strong>yes</strong></td><td>no</td><td>all rows</td><td>own rows</td></tr>
+<tr><td>public.messages</td><td>none</td><td>no</td><td>all rows</td><td>none</td></tr>
+<tr><td>public.orders</td><td><strong>yes</strong></td><td><strong>yes</strong></td><td>all rows</td><td>all rows</td></tr>
+<tr><td>public.profiles</td><td><strong>yes</strong></td><td><strong>yes</strong></td><td>all rows</td><td>all rows</td></tr>
+<tr><td>public.reviews</td><td>none</td><td>no</td><td>own rows</td><td>own rows</td></tr>
+</table>
+<table>
+<tr><th>Route</th><th>Who can call it</th><th>Touches</th></tr>
+<tr><td>FUNCTION get-order</td><td><strong>anyone</strong></td><td>supabase-service-role</td></tr>
+<tr><td>FUNCTION send-invite</td><td><strong>anyone</strong></td><td>-</td></tr>
+</table>
+<h2>Findings</h2>
+<h3>[CRITICAL] AUTH-002: Data-returning or data-changing route has no authentication check</h3>
+<p><strong>In plain words:</strong> Anyone on the internet can call <code>FUNCTION get-order</code>. It reads or changes data with full access and never checks who is asking.</p>
+<p><strong>Where:</strong> <code>supabase/functions/get-order/index.ts:1</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+import { serve } from &quot;https://deno.land/std@0.168.0/http/server.ts&quot;;
+</pre>
+<p><strong>Why it matters:</strong> Handler uses supabase-service-role and has no recognised authentication call.</p>
+<p><strong>Fix:</strong> Check the session at the top of the handler and return 401 when it is missing. Then check that the caller owns the record (API-005).</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[CRITICAL] AUTH-004: Server trusts a user identifier supplied by the client</h3>
+<p><strong>In plain words:</strong> <code>FUNCTION get-order</code> believes whatever user ID the caller sends. Changing one field in the request lets a person act as any other user.</p>
+<p><strong>Where:</strong> <code>supabase/functions/get-order/index.ts:10</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+const { user_id, order_id } = await req.json();
+</pre>
+<p><strong>Why it matters:</strong> <code>user_id</code> comes from the request and is used with supabase-service-role. Identity must come from the verified session, not from the request body, query or headers.</p>
+<p><strong>Fix:</strong> Derive the user ID from the verified session on the server and ignore identity fields sent by the client.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[CRITICAL] AUTH-013: Role or admin flag stored where the user can change it</h3>
+<p><strong>In plain words:</strong> Users can edit their own row in <code>accounts</code>, and that row also stores plan, is_admin, credits. A user can promote or credit themselves with one request.</p>
+<p><strong>Where:</strong> <code>supabase/migrations/20240110000000_accounts.sql:9</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+create policy &quot;Users can update own account&quot; on public.accounts for update using (auth.uid() = user_id)
+</pre>
+<p><strong>Why it matters:</strong> The update policy on public.accounts does not restrict which columns change, and the table has privileged column(s): plan, is_admin, credits.</p>
+<p><strong>Fix:</strong> Move these columns to a table users cannot write, or revoke UPDATE on them and grant UPDATE only on the safe columns.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[CRITICAL] DB-001: Row level security disabled on a client-reachable table</h3>
+<p><strong>In plain words:</strong> Anyone on the internet can read and change every row in <code>profiles</code>, because the table has no access rules switched on.</p>
+<p><strong>Where:</strong> <code>supabase/migrations/20240101000000_init.sql:3</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+create table public.profiles ( id uuid primary key references auth.users(id), full_name text, email text, phone text, role text default &#x27;user&#x27;, created_at timestamp default now() )
+</pre>
+<p><strong>Why it matters:</strong> Table public.profiles is in an exposed schema and row level security is never enabled in the migrations. It holds columns that look sensitive: full_name, email, phone. The publishable key that ships in the app is enough to query it.</p>
+<p><strong>Fix:</strong> Write a new migration that enables row level security and adds per-operation policies scoped to the row owner.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> confirmed</p>
+<h3>[CRITICAL] DB-002: Policy allows everyone</h3>
+<p><strong>In plain words:</strong> Anyone on the internet can read, add, change and delete rows in <code>orders</code> without signing in. The access rule is switched on but lets everyone through.</p>
+<p><strong>Where:</strong> <code>supabase/migrations/20240101000000_init.sql:35</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+create policy &quot;Enable all&quot; on public.orders for all using (true)
+</pre>
+<p><strong>Why it matters:</strong> Policy &quot;Enable all&quot; applies to all roles for all with an unconditional expression.</p>
+<p><strong>Fix:</strong> Replace it with per-operation policies scoped to authenticated users and to the row owner.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> confirmed</p>
+<h3>[CRITICAL] DB-003: Authenticated-only policy without ownership scoping</h3>
+<p><strong>In plain words:</strong> Any signed-up user can read every row in <code>messages</code>, not just their own. Signing up is open to anyone, so this protects nothing.</p>
+<p><strong>Where:</strong> <code>supabase/migrations/20240101000000_init.sql:45</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+create policy &quot;Authenticated users can read messages&quot; on public.messages for select using (auth.role() = &#x27;authenticated&#x27;)
+</pre>
+<p><strong>Why it matters:</strong> Policy &quot;Authenticated users can read messages&quot; only checks that the caller is signed in.</p>
+<p><strong>Fix:</strong> Add an ownership or membership condition, for example (select auth.uid()) = sender_id.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[CRITICAL] DB-005: Policy trusts user-editable metadata</h3>
+<p><strong>In plain words:</strong> The rule on <code>reviews</code> decides access from profile data that users can edit themselves, so any user can grant themselves that access.</p>
+<p><strong>Where:</strong> <code>supabase/migrations/20240110000000_accounts.sql:19</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+create policy &quot;Verified sellers can moderate reviews&quot; on public.reviews for delete using ((auth.jwt() -&gt; &#x27;user_metadata&#x27; -&gt;&gt; &#x27;role&#x27;) = &#x27;moderator&#x27;)
+</pre>
+<p><strong>Why it matters:</strong> Policy &quot;Verified sellers can moderate reviews&quot; reads user_metadata, which a signed-in user can change with one API call.</p>
+<p><strong>Fix:</strong> Use app_metadata (server-controlled) or a roles table that users cannot write.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> confirmed</p>
+<h3>[CRITICAL] DB-009: Storage bucket is public or has no access policies</h3>
+<p><strong>In plain words:</strong> Every file in the <code>id-documents</code> storage bucket can be downloaded by anyone who has or guesses its link.</p>
+<p><strong>Where:</strong> <code>supabase/migrations/20240105000000_storage.sql:1</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+insert into storage.buckets (id, name, public) values (&#x27;id-documents&#x27;, &#x27;id-documents&#x27;, true)
+</pre>
+<p><strong>Why it matters:</strong> Bucket &quot;id-documents&quot; is created with public = true. Its name suggests private documents.</p>
+<p><strong>Fix:</strong> Make the bucket private, add policies on storage.objects scoped to the user&#x27;s folder, and serve files with short-lived signed URLs.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[CRITICAL] SEC-002: Secret committed in the current working tree</h3>
+<p><strong>In plain words:</strong> A real-looking OpenAI project, service account or admin key is saved in .env, a file that is part of the repository. Anyone who can see the repository has this key.</p>
+<p><strong>Where:</strong> <code>.env:4</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+VITE_OPENAI_API_KEY=&quot;sk-p…5v (56 chars)&quot;
+</pre>
+<p><strong>Why it matters:</strong> VITE_OPENAI_API_KEY = sk-p…5v (56 chars) in an env file that is not covered by .gitignore. The variable name starts with VITE_, so the value is also built into the browser bundle (SEC-005).</p>
+<p><strong>Fix:</strong> Remove the value from the file, add the file to .gitignore, keep an .env.example with empty values, and rotate the key.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[CRITICAL] SEC-005: Secret stored in a browser-exposed environment variable</h3>
+<p><strong>In plain words:</strong> VITE_OPENAI_API_KEY is set up to hold an AI provider key, but its name starts with VITE_, which tells the build tool to copy the value into the code sent to every visitor.</p>
+<p><strong>Where:</strong> <code>.env:4</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+VITE_OPENAI_API_KEY=[value present]
+</pre>
+<p><strong>Why it matters:</strong> Variable VITE_OPENAI_API_KEY in .env. Its value matches a private key format. Variables with this prefix are inlined into the browser bundle at build time.</p>
+<p><strong>Fix:</strong> Rename it without the public prefix, move the code that uses it to the server, and rotate the key if a real value was ever deployed.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> confirmed</p>
+<h3>[CRITICAL] SEC-013: AI provider key used directly from the browser or mobile client</h3>
+<p><strong>In plain words:</strong> The AI provider is called straight from the browser, so the key that pays for it is in every visitor&#x27;s hands.</p>
+<p><strong>Where:</strong> <code>src/lib/ai.ts:6</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+dangerouslyAllowBrowser: true,
+</pre>
+<p><strong>Why it matters:</strong> AI SDK constructed in client-bundled code with dangerouslyAllowBrowser: true.</p>
+<p><strong>Fix:</strong> Create a server endpoint that holds the key, checks who is calling and enforces limits. Rotate the key and set a provider spending limit.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> confirmed</p>
+<h3>[HIGH] API-002: No rate limiting on expensive or abusable endpoints</h3>
+<p><strong>In plain words:</strong> Nothing limits how often the app&#x27;s costly endpoints can be called. One script can run up your bills, exhaust quotas or take the app down.</p>
+<p><strong>Where:</strong> <code>supabase/functions/send-invite/index.ts:1</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+import { serve } from &quot;https://deno.land/std@0.168.0/http/server.ts&quot;;
+</pre>
+<p><strong>Why it matters:</strong> No rate limiting library or code was found. Endpoints that should be limited: FUNCTION send-invite.</p>
+<p><strong>Fix:</strong> Add per-user and per-IP limits backed by a shared store or the host&#x27;s firewall rules, stricter on the costly endpoints.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[HIGH] API-013: Edge or cloud functions deployed with JWT verification disabled</h3>
+<p><strong>In plain words:</strong> The server function <code>get-order</code> accepts calls from anyone, with no check that the caller is signed in.</p>
+<p><strong>Where:</strong> <code>supabase/config.toml:11</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+[functions.get-order] verify_jwt = false
+</pre>
+<p><strong>Why it matters:</strong> verify_jwt = false for function get-order, and its code does not verify the caller or a webhook signature itself.</p>
+<p><strong>Fix:</strong> Remove verify_jwt = false, or verify the bearer token in the function. For webhooks, verify the provider&#x27;s signature.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[HIGH] API-013: Edge or cloud functions deployed with JWT verification disabled</h3>
+<p><strong>In plain words:</strong> The server function <code>send-invite</code> accepts calls from anyone, with no check that the caller is signed in.</p>
+<p><strong>Where:</strong> <code>supabase/config.toml:14</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+[functions.send-invite] verify_jwt = false
+</pre>
+<p><strong>Why it matters:</strong> verify_jwt = false for function send-invite, and its code does not verify the caller or a webhook signature itself.</p>
+<p><strong>Fix:</strong> Remove verify_jwt = false, or verify the bearer token in the function. For webhooks, verify the provider&#x27;s signature.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[HIGH] DB-004: Write policy missing an effective WITH CHECK condition</h3>
+<p><strong>In plain words:</strong> A signed-in user can add rows to <code>listings</code> that claim to belong to someone else.</p>
+<p><strong>Where:</strong> <code>supabase/migrations/20240101000000_init.sql:22</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+create policy &quot;Users can create listings&quot; on public.listings for insert to authenticated with check (true)
+</pre>
+<p><strong>Why it matters:</strong> Insert policy &quot;Users can create listings&quot; has a WITH CHECK that does not compare the owner column with auth.uid(), so nothing ties the new row&#x27;s user_id to the caller.</p>
+<p><strong>Fix:</strong> Add WITH CHECK ((select auth.uid()) = user_id).</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> confirmed</p>
+<h3>[HIGH] DB-007: Privileged function callable through the API</h3>
+<p><strong>In plain words:</strong> The database function <code>promote_to_admin</code> runs with full rights and can be called by anyone through the API, skipping the access rules.</p>
+<p><strong>Where:</strong> <code>supabase/migrations/20240110000000_accounts.sql:24</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+create or replace function public.promote_to_admin(target uuid) returns void language sql security definer as $$ update public.accounts set is_admin = true where user_id = target; $$
+</pre>
+<p><strong>Why it matters:</strong> public.promote_to_admin is SECURITY DEFINER in an exposed schema: no fixed search_path; EXECUTE is not revoked from anon/public; it takes a user ID argument and never checks auth.uid().</p>
+<p><strong>Fix:</strong> Move it to a private schema or revoke EXECUTE from anon and public, set search_path = &#x27;&#x27;, and check auth.uid() inside the function.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[HIGH] DB-008: View bypasses row level security</h3>
+<p><strong>In plain words:</strong> The view <code>order_summaries</code> shows rows to every caller regardless of the access rules on the tables behind it.</p>
+<p><strong>Where:</strong> <code>supabase/migrations/20240110000000_accounts.sql:32</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+create view public.order_summaries as select o.id, o.total, o.shipping_address, p.email from public.orders o join public.profiles p on p.id = o.buyer_id
+</pre>
+<p><strong>Why it matters:</strong> public.order_summaries is created without security_invoker in an exposed schema. Views run with their owner&#x27;s rights unless created with security_invoker = true.</p>
+<p><strong>Fix:</strong> Recreate it WITH (security_invoker = true), or move it out of the exposed schema.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[HIGH] DB-020: Realtime channels deliver data without authorisation</h3>
+<p><strong>In plain words:</strong> Live updates from <code>messages</code> are broadcast to everyone who can read the table, and the table&#x27;s read rule lets everyone in.</p>
+<p><strong>Where:</strong> <code>supabase/migrations/20240101000000_init.sql:50</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+alter publication supabase_realtime add table public.messages
+</pre>
+<p><strong>Why it matters:</strong> public.messages is in the supabase_realtime publication and its SELECT access is not scoped to the row owner.</p>
+<p><strong>Fix:</strong> Fix the SELECT policy first; realtime follows it.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> possible</p>
+<h3>[HIGH] DB-021: Anonymous role holds broad grants or can call sensitive RPCs</h3>
+<p><strong>In plain words:</strong> Visitors who are not signed in are granted write access, and 2 table(s) have no rule to stop them.</p>
+<p><strong>Where:</strong> <code>supabase/migrations/20240110000000_accounts.sql:36</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+grant all on all tables in schema public to anon
+</pre>
+<p><strong>Why it matters:</strong> Grant to anon combined with missing or permissive row level security on: public.orders, public.profiles.</p>
+<p><strong>Fix:</strong> Fix the row level security on those tables, and grant anon only what public pages need.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[HIGH] DB-024: Public profile data exposes private fields</h3>
+<p><strong>In plain words:</strong> Anyone on the internet can download every user&#x27;s full_name, email, phone from <code>profiles</code>.</p>
+<p><strong>Where:</strong> <code>supabase/migrations/20240101000000_init.sql:3</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+create table public.profiles ( id uuid primary key references auth.users(id), full_name text, email text, phone text, role text default &#x27;user&#x27;, created_at timestamp default now() )
+</pre>
+<p><strong>Why it matters:</strong> public.profiles is readable in full by anon and authenticated and contains: full_name, email, phone.</p>
+<p><strong>Fix:</strong> Split public and private columns into separate tables, or expose a restricted view, and select explicit columns.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[HIGH] MAIL-002: Relying on the backend provider&#x27;s built-in development email service</h3>
+<p><strong>In plain words:</strong> Sign-up and password reset emails go through the provider&#x27;s built-in test mail service, which is tightly rate limited. Once real users arrive, some of them will never receive their email.</p>
+<p><strong>Where:</strong> <code>supabase/config.toml:7</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+[auth.email] (no [auth.email.smtp] section)
+</pre>
+<p><strong>Why it matters:</strong> No custom SMTP is configured in supabase/config.toml. Confirm in the dashboard under Authentication, SMTP settings.</p>
+<p><strong>Fix:</strong> Configure a transactional email provider as custom SMTP and authenticate the sending domain.</p>
+<p><strong>Effort:</strong> owner · <strong>Who:</strong> You need to do this in a dashboard</p>
+<p><strong>Confidence:</strong> possible</p>
+<h3>[HIGH] MAIL-004: Email or SMS sending can be triggered without limit</h3>
+<p><strong>In plain words:</strong> Anyone can make <code>FUNCTION send-invite</code> send email or text messages to any address, as often as they like. Your sending domain will be blacklisted and SMS fraud costs real money.</p>
+<p><strong>Where:</strong> <code>supabase/functions/send-invite/index.ts:1</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+import { serve } from &quot;https://deno.land/std@0.168.0/http/server.ts&quot;;
+</pre>
+<p><strong>Why it matters:</strong> Message-sending handler with no authentication, rate limit or CAPTCHA, and a recipient taken from the request.</p>
+<p><strong>Fix:</strong> Require sign-in where possible, rate limit per IP, account and recipient, add a CAPTCHA to public forms, and send fixed templates only.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[HIGH] OBS-001: No error tracking</h3>
+<p><strong>In plain words:</strong> If the app breaks for a user, you will not find out unless they tell you. Nothing records errors.</p>
+<p><strong>Where:</strong> <code>package.json:1</code></p>
+<p><strong>Why it matters:</strong> No error tracking SDK (Sentry, Bugsnag, Rollbar and similar) or custom error hook was found on the client or the server.</p>
+<p><strong>Fix:</strong> Add an error tracker on both client and server, scrub personal data, and upload source maps privately.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[HIGH] SEC-004: Environment files are not ignored by git</h3>
+<p><strong>In plain words:</strong> Your .gitignore does not exclude .env files, so the file that holds your keys will be published with the next commit.</p>
+<p><strong>Where:</strong> <code>.gitignore:1</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+node_modules
+</pre>
+<p><strong>Why it matters:</strong> .gitignore has no pattern that matches .env; env files present: .env.</p>
+<p><strong>Fix:</strong> Add .env and .env.* to .gitignore, keep !.env.example, and run <code>git rm --cached .env</code> if it is already tracked.</p>
+<p><strong>Effort:</strong> small · <strong>Who:</strong> Claude can fix this</p>
+<p><strong>Confidence:</strong> confirmed</p>
+<h3>[HIGH] SEC-007: Secrets or server code visible in published source maps or build output</h3>
+<p><strong>In plain words:</strong> The app publishes its original source code (source maps) to every visitor, including comments and any value that was inlined at build time.</p>
+<p><strong>Where:</strong> <code>vite.config.ts:10</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+build: { sourcemap: true },
+</pre>
+<p><strong>Why it matters:</strong> Production source maps are enabled.</p>
+<p><strong>Fix:</strong> Disable public source maps, or upload them privately to your error tracker.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[HIGH] UP-004: Private files exposed through permanent public URLs</h3>
+<p><strong>In plain words:</strong> Private documents in <code>id-documents</code> are shared through permanent public links. Anyone who gets a link has the file forever.</p>
+<p><strong>Where:</strong> <code>src/pages/Profile.tsx:12</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+const { data } = supabase.storage.from(&quot;id-documents&quot;).getPublicUrl(path);
+</pre>
+<p><strong>Why it matters:</strong> getPublicUrl() on bucket &quot;id-documents&quot;, whose name suggests private files.</p>
+<p><strong>Fix:</strong> Make the bucket private and issue short-lived signed URLs after checking that the caller may see the file.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] API-001: Request input is not validated</h3>
+<p><strong>In plain words:</strong> <code>FUNCTION get-order</code> uses what the caller sends without checking its type or size. Unexpected input can crash it or store bad data.</p>
+<p><strong>Where:</strong> <code>supabase/functions/get-order/index.ts:1</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+import { serve } from &quot;https://deno.land/std@0.168.0/http/server.ts&quot;;
+</pre>
+<p><strong>Why it matters:</strong> Handler reads body with no schema validation (zod, valibot, yup, joi, pydantic) and no manual type checks.</p>
+<p><strong>Fix:</strong> Parse the input with a schema at the top of the handler, return 400 on failure, and use only the parsed result.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> possible</p>
+<h3>[MEDIUM] API-001: Request input is not validated</h3>
+<p><strong>In plain words:</strong> <code>FUNCTION send-invite</code> uses what the caller sends without checking its type or size. Unexpected input can crash it or store bad data.</p>
+<p><strong>Where:</strong> <code>supabase/functions/send-invite/index.ts:1</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+import { serve } from &quot;https://deno.land/std@0.168.0/http/server.ts&quot;;
+</pre>
+<p><strong>Why it matters:</strong> Handler reads body with no schema validation (zod, valibot, yup, joi, pydantic) and no manual type checks.</p>
+<p><strong>Fix:</strong> Parse the input with a schema at the top of the handler, return 400 on failure, and use only the parsed result.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> possible</p>
+<h3>[MEDIUM] API-004: Errors return internal details to the client</h3>
+<p><strong>In plain words:</strong> When something fails, the server sends the internal error text to the caller. That can reveal table names, file paths and sometimes secrets.</p>
+<p><strong>Where:</strong> <code>supabase/functions/get-order/index.ts:14</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
+</pre>
+<p><strong>Why it matters:</strong> Response body includes the error&#x27;s message or stack.</p>
+<p><strong>Fix:</strong> Return a generic message with a request ID, and send the full error to server logs and the error tracker.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] AUTH-008: Email addresses are not verified before the account is trusted</h3>
+<p><strong>In plain words:</strong> Email addresses are not confirmed in this configuration, so someone can sign up with an address they do not own.</p>
+<p><strong>Where:</strong> <code>supabase/config.toml:8</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+enable_confirmations = false
+</pre>
+<p><strong>Why it matters:</strong> [auth.email] enable_confirmations = false in supabase/config.toml. This file configures local development; the hosted project may differ, so confirm in the dashboard under Authentication.</p>
+<p><strong>Fix:</strong> Enable email confirmation in the hosted project and in config.toml.</p>
+<p><strong>Effort:</strong> owner · <strong>Who:</strong> You need to do this in a dashboard</p>
+<p><strong>Confidence:</strong> possible</p>
+<h3>[MEDIUM] DB-017: Missing indexes on columns used by policies and foreign keys</h3>
+<p><strong>In plain words:</strong> The access rules on <code>listings</code> will make every query slower as the table grows.</p>
+<p><strong>Where:</strong> <code>supabase/migrations/20240101000000_init.sql:21</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+create policy &quot;Anyone can view listings&quot; on public.listings for select using (true)
+</pre>
+<p><strong>Why it matters:</strong> Policies on public.listings: no index on user_id.</p>
+<p><strong>Fix:</strong> Add an index on the policy column(s) and wrap auth.uid() in a sub-select.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] DB-017: Missing indexes on columns used by policies and foreign keys</h3>
+<p><strong>In plain words:</strong> The access rules on <code>messages</code> will make every query slower as the table grows.</p>
+<p><strong>Where:</strong> <code>supabase/migrations/20240101000000_init.sql:45</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+create policy &quot;Authenticated users can read messages&quot; on public.messages for select using (auth.role() = &#x27;authenticated&#x27;)
+</pre>
+<p><strong>Why it matters:</strong> Policies on public.messages: no index on sender_id.</p>
+<p><strong>Fix:</strong> Add an index on the policy column(s) and wrap auth.uid() in a sub-select.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] DB-017: Missing indexes on columns used by policies and foreign keys</h3>
+<p><strong>In plain words:</strong> The access rules on <code>accounts</code> will make every query slower as the table grows.</p>
+<p><strong>Where:</strong> <code>supabase/migrations/20240110000000_accounts.sql:8</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+create policy &quot;Users can view own account&quot; on public.accounts for select using (auth.uid() = user_id)
+</pre>
+<p><strong>Why it matters:</strong> Policies on public.accounts: auth.uid() is called per row instead of once via (select auth.uid()).</p>
+<p><strong>Fix:</strong> Add an index on the policy column(s) and wrap auth.uid() in a sub-select.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] DB-017: Missing indexes on columns used by policies and foreign keys</h3>
+<p><strong>In plain words:</strong> The access rules on <code>reviews</code> will make every query slower as the table grows.</p>
+<p><strong>Where:</strong> <code>supabase/migrations/20240110000000_accounts.sql:19</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+create policy &quot;Verified sellers can moderate reviews&quot; on public.reviews for delete using ((auth.jwt() -&gt; &#x27;user_metadata&#x27; -&gt;&gt; &#x27;role&#x27;) = &#x27;moderator&#x27;)
+</pre>
+<p><strong>Why it matters:</strong> Policies on public.reviews: no index on author_id; auth.uid() is called per row instead of once via (select auth.uid()).</p>
+<p><strong>Fix:</strong> Add an index on the policy column(s) and wrap auth.uid() in a sub-select.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] DEP-003: Environment variables are not validated at startup</h3>
+<p><strong>In plain words:</strong> The app reads its settings in 3 different files without checking them at startup. A missing setting shows up later as a confusing failure.</p>
+<p><strong>Where:</strong> <code>src/lib/ai.ts:5</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+</pre>
+<p><strong>Why it matters:</strong> Environment variables are read directly in: src/lib/ai.ts, supabase/functions/get-order/index.ts, supabase/functions/send-invite/index.ts. No validation module was found.</p>
+<p><strong>Fix:</strong> Add one module that validates the environment with a schema and fails fast, and read settings only through it.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] DEP-006: Builds are not reproducible</h3>
+<p><strong>In plain words:</strong> Tomorrow&#x27;s deployment may install different code than today&#x27;s: no lockfile; no pinned Node version.</p>
+<p><strong>Where:</strong> <code>package.json:1</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+{
+</pre>
+<p><strong>Why it matters:</strong> Reproducibility review: no lockfile; no pinned Node version.</p>
+<p><strong>Fix:</strong> Use one package manager, commit its lockfile, pin the runtime and install with <code>npm ci</code>.</p>
+<p><strong>Effort:</strong> small · <strong>Who:</strong> Claude can fix this</p>
+<p><strong>Confidence:</strong> confirmed</p>
+<h3>[MEDIUM] DEP-008: Build ignores type and lint errors</h3>
+<p><strong>In plain words:</strong> TypeScript&#x27;s safety checks are turned off, so many bugs are invisible until a user hits them.</p>
+<p><strong>Where:</strong> <code>tsconfig.json:9</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+&quot;noImplicitAny&quot;: false,
+</pre>
+<p><strong>Why it matters:</strong> strict, strictNullChecks or noImplicitAny is false in tsconfig.json.</p>
+<p><strong>Fix:</strong> Enable strict mode gradually and fix what surfaces.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] FE-002: Sensitive data kept in browser storage or client state longer than needed</h3>
+<p><strong>In plain words:</strong> A copy of the user&#x27;s personal data is kept in the browser&#x27;s storage, where it stays after sign-out and is readable by any script on the page.</p>
+<p><strong>Where:</strong> <code>src/pages/Profile.tsx:15</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+localStorage.setItem(&quot;user_profile&quot;, JSON.stringify(profile));
+</pre>
+<p><strong>Why it matters:</strong> localStorage.setItem(&#x27;user_profile&#x27;, ...) persists a user record.</p>
+<p><strong>Fix:</strong> Store the minimum needed, and clear it on sign-out.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] FE-004: No error boundary or global error handling</h3>
+<p><strong>In plain words:</strong> If any part of the page hits an error, the whole app turns into a blank white screen with no way forward.</p>
+<p><strong>Where:</strong> <code>src/App.tsx:1</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+import { BrowserRouter, Routes, Route } from &quot;react-router-dom&quot;;
+</pre>
+<p><strong>Why it matters:</strong> No error boundary, error route file or global error handler was found.</p>
+<p><strong>Fix:</strong> Add an error boundary (for Next.js: app/error.tsx and app/global-error.tsx) with a retry action, and report the error to your tracker.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] HDR-001: No Content Security Policy</h3>
+<p><strong>In plain words:</strong> The site sends no Content Security Policy. If an attacker ever gets a script onto a page, nothing limits what it can do.</p>
+<p><strong>Where:</strong> <code>package.json:1</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+{
+</pre>
+<p><strong>Why it matters:</strong> No Content-Security-Policy header or meta tag in framework, host or middleware configuration.</p>
+<p><strong>Fix:</strong> Start from assets/security-headers/ for your host, in report-only mode first if the app has inline scripts.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] HDR-002: HTTPS not enforced with HSTS</h3>
+<p><strong>In plain words:</strong> Nothing makes browsers insist on HTTPS for this site, so a visitor on a hostile network can be downgraded to an unencrypted connection.</p>
+<p><strong>Where:</strong> <code>package.json:1</code></p>
+<p><strong>Why it matters:</strong> No Strict-Transport-Security header configured and the host is not known to add it.</p>
+<p><strong>Fix:</strong> Add Strict-Transport-Security: max-age=63072000; includeSubDomains once HTTPS works everywhere.</p>
+<p><strong>Effort:</strong> small · <strong>Who:</strong> Claude can fix this</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] HDR-003: Pages can be framed by other sites</h3>
+<p><strong>In plain words:</strong> Other sites can embed your pages in an invisible frame and trick visitors into clicking.</p>
+<p><strong>Where:</strong> <code>package.json:1</code></p>
+<p><strong>Why it matters:</strong> No frame-ancestors directive and no X-Frame-Options header.</p>
+<p><strong>Fix:</strong> Add frame-ancestors &#x27;none&#x27; (or &#x27;self&#x27;) to the CSP and X-Frame-Options: DENY.</p>
+<p><strong>Effort:</strong> small · <strong>Who:</strong> Claude can fix this</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] LAUNCH-004: Placeholder content and mock data shipped</h3>
+<p><strong>In plain words:</strong> Placeholder content is still in the app: &quot;coming soon&quot; text, a button or link that does nothing, placeholder person name, placeholder text (lorem ipsum). Visitors read this as an unfinished or untrustworthy product.</p>
+<p><strong>Where:</strong> <code>src/pages/Index.tsx:5</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+{ name: &quot;John Doe&quot;, text: &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit.&quot; },
+</pre>
+<p><strong>Why it matters:</strong> 9 placeholder item(s) in user-visible text in this file.</p>
+<p><strong>Fix:</strong> Replace with real content or remove it. Invented testimonials and statistics should be deleted, not reworded.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] PAY-011: Money stored or computed as floating point</h3>
+<p><strong>In plain words:</strong> The <code>price</code> amount is stored as a floating point number, which cannot represent most decimal amounts exactly.</p>
+<p><strong>Where:</strong> <code>supabase/migrations/20240101000000_init.sql:17</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+price real not null,
+</pre>
+<p><strong>Why it matters:</strong> Column price has type real.</p>
+<p><strong>Fix:</strong> Store integer minor units (cents) or use numeric(12,2).</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] PERF-002: Whole tables fetched to the client and filtered there</h3>
+<p><strong>In plain words:</strong> The app downloads the whole <code>messages</code> table to the browser and then picks out what it needs. That is slow, costs money, and hands every visitor rows they should not receive.</p>
+<p><strong>Where:</strong> <code>src/pages/Messages.tsx:12</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+const { data } = await supabase.from(&quot;messages&quot;).select(&quot;*&quot;);
+</pre>
+<p><strong>Why it matters:</strong> Unfiltered fetch followed by client-side .filter within the same component.</p>
+<p><strong>Fix:</strong> Filter, sort and paginate in the query, and let the access rules return only the caller&#x27;s rows.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] PRIV-001: No privacy policy or terms where personal data is collected</h3>
+<p><strong>In plain words:</strong> Your app collects people&#x27;s accounts but has no privacy policy or terms. App stores, payment providers and sign-in screens require them, and most countries do too.</p>
+<p><strong>Where:</strong> <code>project-level</code></p>
+<p><strong>Why it matters:</strong> Accounts are present (supabase-auth) but no privacy or terms page, route or link was found. This is a factual finding, not legal advice.</p>
+<p><strong>Fix:</strong> Add privacy and terms pages linked from sign-up and the footer. Use the data inventory from this report to draft the policy with a lawyer or a policy generator.</p>
+<p><strong>Effort:</strong> owner · <strong>Who:</strong> You need to do this in a dashboard</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] PRIV-003: Users cannot delete their account or export their data</h3>
+<p><strong>In plain words:</strong> Users cannot delete their account or their data. That is a legal right in many places and a requirement of both app stores for apps with sign-up.</p>
+<p><strong>Where:</strong> <code>project-level</code></p>
+<p><strong>Why it matters:</strong> No account deletion endpoint, function or screen was found.</p>
+<p><strong>Fix:</strong> Add a confirmed deletion flow that removes the user&#x27;s rows, files and third-party records (database cascades help), plus an export of their data.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] REL-002: External calls without timeouts or retry policy</h3>
+<p><strong>In plain words:</strong> A call to another service has no time limit. If that service hangs, every request that depends on it hangs too.</p>
+<p><strong>Where:</strong> <code>supabase/functions/send-invite/index.ts:6</code></p>
+<p><strong>Evidence:</strong></p>
+<pre>
+const res = await fetch(&quot;https://api.resend.com/emails&quot;, {
+</pre>
+<p><strong>Why it matters:</strong> fetch() without an abort signal or timeout.</p>
+<p><strong>Fix:</strong> Pass signal: AbortSignal.timeout(ms) and handle the timeout.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> possible</p>
+<h3>[MEDIUM] TEST-001: No automated test for the critical paths</h3>
+<p><strong>In plain words:</strong> There are no automated tests. Every later change, especially one made by an AI tool, can silently break sign-up or payment.</p>
+<p><strong>Where:</strong> <code>package.json:1</code></p>
+<p><strong>Why it matters:</strong> No test files or test script found.</p>
+<p><strong>Fix:</strong> Add a small set of tests: sign-in, the core action, cross-user access denial and payment webhook handling.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> confirmed</p>
+<h3>[MEDIUM] TEST-002: No access-rule tests</h3>
+<p><strong>In plain words:</strong> The access rules are the main security boundary, and nothing tests them. One careless edit can open the whole database.</p>
+<p><strong>Where:</strong> <code>supabase/config.toml:1</code></p>
+<p><strong>Why it matters:</strong> Policies or rules exist but no emulator, pgTAP or SQL tests reference them.</p>
+<p><strong>Fix:</strong> Generate tests from assets/sql/rls_test.sql.tmpl or add Firebase emulator rules tests: user A cannot read or write user B&#x27;s data, and anonymous cannot read private data.</p>
+<p><strong>Effort:</strong> medium · <strong>Who:</strong> Claude can fix this; you review and apply</p>
+<p><strong>Confidence:</strong> likely</p>
+<h3>[MEDIUM] TEST-003: No CI pipeline running checks before deploy</h3>
+<p><strong>In plain words:</strong> Nothing checks changes before they go live, so broken or insecure code ships unreviewed.</p>
+<p><strong>Where:</strong> <code>project-level</code></p>
+<p><strong>Why it matters:</strong> No CI workflow that runs tests, type checks, a build or an audit.</p>
+<p><strong>Fix:</strong> Install assets/ci/prodready.yml and add install, typecheck, test, build and an audit step.</p>
+<p><strong>Effort:</strong> small · <strong>Who:</strong> Claude can fix this</p>
+<p><strong>Confidence:</strong> confirmed</p>
+<h3>Low (batched)</h3>
+<ul>
+<li><code>DEP-004</code> There is no simple address a monitoring service can call to check whether the app is alive. (package.json:1)</li>
+<li><code>DEPS-006</code> Nothing tells you when a new security fix is released for the packages you use. </li>
+<li><code>FE-003</code> Debug output is left in the app. Anyone who opens the browser console sees it, and it can include user data. (src/pages/Index.tsx:14)</li>
+<li><code>FE-007</code> The page loads a script from another company&#x27;s server with no integrity check. If that server is compromised, the attacker&#x27;s code runs on your site with full access to the page. (index.html:13)</li>
+<li><code>FE-007</code> The page loads a script from another company&#x27;s server with no integrity check. If that server is compromised, the attacker&#x27;s code runs on your site with full access to the page. (index.html:14)</li>
+<li><code>FE-008</code> Some visitors cannot use parts of the app: the page does not declare its language; 1 image(s) without a text description; 1 clickable element(s) that keyboards and screen readers cannot use. (index.html:2)</li>
+<li><code>FE-009</code> Links that open a new tab do not isolate it from your page. Older browsers let the new page redirect yours. (src/pages/Index.tsx:27)</li>
+<li><code>HDR-004</code> Small free protections are not switched on: x-content-type-options, referrer-policy, permissions-policy. (package.json:1)</li>
+<li><code>LAUNCH-001</code> When someone shares a link to the app, it shows up with the title is still the template default (&quot;Lovable App&quot;); the description is the template default; the social preview image is the builder&#x27;s default. (index.html:6)</li>
+<li><code>LAUNCH-002</code> The app&#x27;s icons are not finished: no browser tab icon; no home-screen icon; no web app manifest. (index.html:1)</li>
+<li><code>LAUNCH-003</code> There is no robots.txt or sitemap, so search engines get no guidance about what to index. (package.json:1)</li>
+<li><code>LAUNCH-005</code> The AI builder&#x27;s branding and tooling are still in the app: a &quot;Edit with Lovable&quot; badge, the Lovable default social image, the Lovable editor script, the Lovable tagger plugin. (index.html:9)</li>
+<li><code>LAUNCH-006</code> Users have no way to ask for help or report a problem, and there is no address for reporting security issues. </li>
+<li><code>LAUNCH-009</code> There is no README that explains how to run, configure and deploy the app, so nobody else, including a future AI assistant, can safely work on it. (README.md:1)</li>
+<li><code>PERF-004</code> A large library is loaded in full for every visitor, which slows the first page load on phones. (src/pages/Listings.tsx:2)</li>
+<li><code>PERF-006</code> A live data subscription is opened every time this screen appears and never closed. Over time that means duplicate updates, memory leaks and rising costs. (src/pages/Messages.tsx:22)</li>
+<li><code>SEC-008</code> There is no .env.example listing the settings this app needs, so setting it up elsewhere is guesswork. </li>
+</ul>
+<h3>Info (batched)</h3>
+<ul>
+<li><code>DB-002</code> Everyone can read <code>listings</code>. If this is public reference data that is fine; confirm that it is intended. (supabase/migrations/20240101000000_init.sql:21)</li>
+<li><code>PRIV-006</code> 3 outside services receive your users&#x27; data. You need this list for your privacy policy and for customers who ask. </li>
+<li><code>SEC-016</code> This Supabase key is designed to be public. It is not a leak; what protects your data is the access rules behind it. (.env:3)</li>
+</ul>
+<h2>Owner actions</h2>
+<ul>
+<li>[ ] <code>AUTH-008</code> Email addresses are not verified before the account is trusted</li>
+<li>[ ] <code>DB-009</code> Storage bucket is public or has no access policies</li>
+<li>[ ] <code>MAIL-002</code> Relying on the backend provider&#x27;s built-in development email service (guide: <code>references/owner-actions/dns-and-email.md</code>)</li>
+<li>[ ] <code>OBS-001</code> No error tracking (guide: <code>references/checks/observability.md#obs-001</code>)</li>
+<li>[ ] <code>PRIV-001</code> No privacy policy or terms where personal data is collected</li>
+<li>[ ] <code>SEC-002</code> Secret committed in the current working tree (guide: <code>references/owner-actions/rotate-keys.md</code>)</li>
+<li>[ ] <code>SEC-005</code> Secret stored in a browser-exposed environment variable (guide: <code>references/owner-actions/rotate-keys.md</code>)</li>
+<li>[ ] <code>SEC-013</code> AI provider key used directly from the browser or mobile client (guide: <code>references/owner-actions/rotate-keys.md</code>)</li>
+</ul>
+<h2>Questions for you</h2>
+<ul>
+<li><code>DB-016</code> Are automated database backups switched on, and have you ever restored one to a scratch project?</li>
+<li><code>REL-007</code> When did you last test restoring from a backup?</li>
+<li><code>OBS-003</code> Is an uptime monitor checking the site and alerting someone who will see it?</li>
+<li><code>DEP-005</code> Do you know how to roll back a bad release on your host?</li>
+<li><code>LAUNCH-007</code> Which is the production domain, and do www and the bare domain redirect to one of them?</li>
+<li><code>DEP-014</code> Have you set budgets and usage alerts at each pay-per-use provider (openai, resend, supabase)?</li>
+<li><code>MAIL-001</code> Is the sending domain authenticated with SPF, DKIM and DMARC?</li>
+<li><code>DEP-011</code> Is the code in a GitHub repository you own, and is the backend project under your own account?</li>
+<li><code>DEP-002</code> Are development and production using separate databases or backend projects?</li>
+<li><code>DEP-013</code> Is the default branch protected, so changes need a review or passing checks?</li>
+</ul>
+<h2>What looks good</h2>
+<h2>Launch checklist</h2>
+<p>See <code>references/checks/launch.md</code>. Status of each item is filled in at the launch gate.</p>
+<h2>Appendix</h2>
+<p><strong>Detected stack:</strong> framework vite-react, database supabase-postgres, auth supabase-auth, payments none, AI openai, hosting lovable.</p>
+<p><strong>Third parties that receive user data:</strong></p>
+<ul>
+<li>openai (AI provider): prompts and uploaded content</li>
+<li>resend (email): email addresses and message content</li>
+<li>supabase (database and auth): accounts, all app data</li>
+</ul>
+<p><strong>Scanners:</strong> scan_secrets (ran), scan_env (ran), scan_supabase (ran), scan_firebase (ran), scan_routes (ran), scan_payments (ran), scan_llm (ran), scan_frontend (ran), scan_config (ran), scan_deps (ran), scan_launch (ran), scan_git_history (skipped)</p>
+<p><strong>Warnings:</strong></p>
+<ul>
+<li>scan_deps: full vulnerability audit skipped (offline). Only the bundled advisory table was used; run <code>npm audit</code> or pass --allow-network.</li>
+</ul>
+<p><strong>Limits of this audit.</strong> This review is automated and based on source code. Settings that exist only in provider dashboards (backups, email domain, billing limits, auth options) could not be seen unless stated. It is not a penetration test and not a compliance certification, and it does not replace a professional audit for health, financial or children&#x27;s data.</p></body></html>

@@ -1,0 +1,13 @@
+{
+  "name": "prodready-marketplace",
+  "description": "prodready: launch-readiness audits for AI-built apps",
+  "owner": { "name": "MOHAMED IBRAHEM" },
+  "plugins": [
+    {
+      "name": "prodready",
+      "source": "./",
+      "description": "Pre-launch production readiness and security audit for apps built with AI builders and coding agents.",
+      "version": "1.0.0"
+    }
+  ]
+}

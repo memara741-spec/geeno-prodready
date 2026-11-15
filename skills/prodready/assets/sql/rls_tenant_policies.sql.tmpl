@@ -1,0 +1,10 @@
+-- prodready {{CHECK_ID}}: scope {{TABLE}} to members of the row's tenant. Rollback: drop these policies.
+alter table {{SCHEMA}}.{{TABLE}} enable row level security;
+
+create policy "{{TABLE}}_select_member" on {{SCHEMA}}.{{TABLE}} for select to authenticated
+  using (exists (select 1 from public.memberships m where m.tenant_id = {{TENANT_COLUMN}} and m.user_id = (select auth.uid())));
+create policy "{{TABLE}}_write_member" on {{SCHEMA}}.{{TABLE}} for all to authenticated
+  using (exists (select 1 from public.memberships m where m.tenant_id = {{TENANT_COLUMN}} and m.user_id = (select auth.uid())))
+  with check (exists (select 1 from public.memberships m where m.tenant_id = {{TENANT_COLUMN}} and m.user_id = (select auth.uid())));
+
+create index if not exists {{TABLE}}_{{TENANT_COLUMN}}_idx on {{SCHEMA}}.{{TABLE}} ({{TENANT_COLUMN}});

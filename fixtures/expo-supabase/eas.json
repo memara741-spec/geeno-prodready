@@ -1,0 +1,6 @@
+{
+  "build": {
+    "production": { "distribution": "store" },
+    "preview": { "distribution": "internal" }
+  }
+}

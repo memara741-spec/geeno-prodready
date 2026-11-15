@@ -1,0 +1,41 @@
+{
+  "stack": {
+    "framework": "expo",
+    "database": "supabase",
+    "mobile": "expo"
+  },
+  "must_find": [
+    {
+      "check_id": "SEC-014",
+      "file": "app.json"
+    },
+    {
+      "check_id": "AUTH-006",
+      "file": "lib/session.ts"
+    },
+    {
+      "check_id": "PRIV-003"
+    },
+    {
+      "check_id": "LAUNCH-008",
+      "file": "app.json"
+    },
+    {
+      "check_id": "DB-001",
+      "file": "supabase/migrations/20240301000000_init.sql",
+      "subject": "public.checkins"
+    }
+  ],
+  "review_only": [
+    {
+      "check_id": "SEC-001",
+      "file": "lib/supabase.ts",
+      "note": "the client is created with the secret key that ships inside the app binary"
+    }
+  ],
+  "must_not_find": [],
+  "max_false_positive_criticals": 0,
+  "planted_secrets": [
+    "sb_secret_Fx9aQz7kLm3pRt5vWy2b"
+  ]
+}

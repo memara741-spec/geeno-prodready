@@ -1,0 +1,166 @@
+{
+  "stack": {
+    "framework": "nextjs",
+    "database": "supabase",
+    "payments": "stripe",
+    "hosting": "vercel"
+  },
+  "must_find": [
+    {
+      "check_id": "PAY-001",
+      "file": "app/api/checkout/route.ts"
+    },
+    {
+      "check_id": "PAY-002",
+      "file": "app/api/webhooks/stripe/route.ts"
+    },
+    {
+      "check_id": "PAY-007",
+      "file": "app/api/billing/portal/route.ts"
+    },
+    {
+      "check_id": "PAY-008",
+      "file": ".env.production"
+    },
+    {
+      "check_id": "PAY-009",
+      "file": "components/CardForm.tsx"
+    },
+    {
+      "check_id": "API-010",
+      "file": "app/actions.ts"
+    },
+    {
+      "check_id": "AUTH-005",
+      "file": "app/api/checkout/route.ts"
+    },
+    {
+      "check_id": "AUTH-003",
+      "file": "middleware.ts"
+    },
+    {
+      "check_id": "AUTH-013",
+      "file": "lib/plan.ts"
+    },
+    {
+      "check_id": "AUTH-012",
+      "file": "app/auth/callback/route.ts"
+    },
+    {
+      "check_id": "DEP-008",
+      "file": "next.config.js"
+    },
+    {
+      "check_id": "API-003",
+      "file": "app/api/me/route.ts"
+    },
+    {
+      "check_id": "HDR-005",
+      "file": "app/api/me/route.ts"
+    },
+    {
+      "check_id": "API-014",
+      "file": "app/api/cron/cleanup/route.ts"
+    },
+    {
+      "check_id": "MAIL-003",
+      "file": "app/api/checkout/route.ts"
+    },
+    {
+      "check_id": "SEC-001",
+      "file": "lib/supabase/browser-admin.ts"
+    },
+    {
+      "check_id": "SEC-005",
+      "file": ".env.example"
+    },
+    {
+      "check_id": "API-001",
+      "file": "app/api/checkout/route.ts"
+    },
+    {
+      "check_id": "API-004",
+      "file": "app/api/export/route.ts"
+    },
+    {
+      "check_id": "API-008",
+      "file": "app/api/export/route.ts"
+    },
+    {
+      "check_id": "HDR-001"
+    },
+    {
+      "check_id": "HDR-003"
+    },
+    {
+      "check_id": "HDR-004"
+    },
+    {
+      "check_id": "HDR-006"
+    },
+    {
+      "check_id": "PRIV-002",
+      "file": "app/layout.tsx"
+    },
+    {
+      "check_id": "PRIV-007",
+      "file": "components/Tracking.tsx"
+    },
+    {
+      "check_id": "PERF-005",
+      "file": "app/page.tsx"
+    },
+    {
+      "check_id": "DEP-006"
+    },
+    {
+      "check_id": "DEPS-001"
+    },
+    {
+      "check_id": "LAUNCH-001",
+      "file": "app/layout.tsx"
+    },
+    {
+      "check_id": "API-002"
+    }
+  ],
+  "review_only": [
+    {
+      "check_id": "PAY-003",
+      "file": "app/success/page.tsx",
+      "note": "success page upgrades the plan without confirming payment"
+    },
+    {
+      "check_id": "API-005",
+      "file": "app/api/invoices/[id]/route.ts",
+      "note": "service-role client, id from params, no ownership condition"
+    },
+    {
+      "check_id": "PAY-004",
+      "file": "app/api/webhooks/stripe/route.ts",
+      "note": "no event id recorded"
+    }
+  ],
+  "must_not_find": [
+    {
+      "check_id": "SEC-002",
+      "file": ".env.production",
+      "note": "only public values: a URL and a publishable key"
+    },
+    {
+      "check_id": "DB-001",
+      "note": "every table has RLS enabled"
+    },
+    {
+      "check_id": "DB-002",
+      "note": "policies are owner-scoped"
+    },
+    {
+      "check_id": "AUTH-002",
+      "file": "app/api/webhooks/stripe/route.ts",
+      "note": "reported as PAY-002, not as a missing session"
+    }
+  ],
+  "max_false_positive_criticals": 0,
+  "planted_secrets": []
+}

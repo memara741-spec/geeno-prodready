@@ -1,0 +1,235 @@
+{
+  "stack": {
+    "framework": "vite-react",
+    "database": "supabase",
+    "builder": "lovable"
+  },
+  "must_find": [
+    {
+      "check_id": "DB-001",
+      "file": "supabase/migrations/20240101000000_init.sql",
+      "subject": "public.profiles"
+    },
+    {
+      "check_id": "DB-002",
+      "file": "supabase/migrations/20240101000000_init.sql",
+      "subject": "public.orders"
+    },
+    {
+      "check_id": "DB-003",
+      "file": "supabase/migrations/20240101000000_init.sql",
+      "subject": "public.messages"
+    },
+    {
+      "check_id": "DB-004",
+      "file": "supabase/migrations/20240101000000_init.sql",
+      "subject": "public.listings"
+    },
+    {
+      "check_id": "DB-005",
+      "file": "supabase/migrations/20240110000000_accounts.sql"
+    },
+    {
+      "check_id": "DB-007",
+      "file": "supabase/migrations/20240110000000_accounts.sql"
+    },
+    {
+      "check_id": "DB-008",
+      "file": "supabase/migrations/20240110000000_accounts.sql"
+    },
+    {
+      "check_id": "DB-009",
+      "file": "supabase/migrations/20240105000000_storage.sql"
+    },
+    {
+      "check_id": "DB-017",
+      "file": "supabase/migrations/20240110000000_accounts.sql"
+    },
+    {
+      "check_id": "DB-021",
+      "file": "supabase/migrations/20240110000000_accounts.sql"
+    },
+    {
+      "check_id": "DB-024",
+      "file": "supabase/migrations/20240101000000_init.sql",
+      "subject": "public.profiles"
+    },
+    {
+      "check_id": "AUTH-013",
+      "file": "supabase/migrations/20240110000000_accounts.sql"
+    },
+    {
+      "check_id": "SEC-002",
+      "file": ".env"
+    },
+    {
+      "check_id": "SEC-004"
+    },
+    {
+      "check_id": "SEC-005",
+      "file": ".env"
+    },
+    {
+      "check_id": "SEC-008"
+    },
+    {
+      "check_id": "SEC-013",
+      "file": "src/lib/ai.ts"
+    },
+    {
+      "check_id": "SEC-016"
+    },
+    {
+      "check_id": "SEC-007",
+      "file": "vite.config.ts"
+    },
+    {
+      "check_id": "AUTH-002",
+      "file": "supabase/functions/get-order/index.ts"
+    },
+    {
+      "check_id": "AUTH-004",
+      "file": "supabase/functions/get-order/index.ts"
+    },
+    {
+      "check_id": "API-013",
+      "file": "supabase/config.toml"
+    },
+    {
+      "check_id": "MAIL-002"
+    },
+    {
+      "check_id": "MAIL-004",
+      "file": "supabase/functions/send-invite/index.ts"
+    },
+    {
+      "check_id": "UP-004",
+      "file": "src/pages/Profile.tsx"
+    },
+    {
+      "check_id": "FE-002",
+      "file": "src/pages/Profile.tsx"
+    },
+    {
+      "check_id": "FE-003",
+      "file": "src/pages/Index.tsx"
+    },
+    {
+      "check_id": "FE-004"
+    },
+    {
+      "check_id": "FE-007",
+      "file": "index.html"
+    },
+    {
+      "check_id": "FE-008"
+    },
+    {
+      "check_id": "FE-009",
+      "file": "src/pages/Index.tsx"
+    },
+    {
+      "check_id": "PERF-002",
+      "file": "src/pages/Messages.tsx"
+    },
+    {
+      "check_id": "PERF-004",
+      "file": "src/pages/Listings.tsx"
+    },
+    {
+      "check_id": "PERF-006",
+      "file": "src/pages/Messages.tsx"
+    },
+    {
+      "check_id": "PAY-011",
+      "file": "supabase/migrations/20240101000000_init.sql"
+    },
+    {
+      "check_id": "LAUNCH-001",
+      "file": "index.html"
+    },
+    {
+      "check_id": "LAUNCH-003"
+    },
+    {
+      "check_id": "LAUNCH-004",
+      "file": "src/pages/Index.tsx"
+    },
+    {
+      "check_id": "LAUNCH-005"
+    },
+    {
+      "check_id": "LAUNCH-006"
+    },
+    {
+      "check_id": "LAUNCH-009",
+      "file": "README.md"
+    },
+    {
+      "check_id": "TEST-001"
+    },
+    {
+      "check_id": "TEST-002"
+    },
+    {
+      "check_id": "TEST-003"
+    },
+    {
+      "check_id": "OBS-001"
+    },
+    {
+      "check_id": "PRIV-001"
+    },
+    {
+      "check_id": "PRIV-003"
+    },
+    {
+      "check_id": "PRIV-006"
+    },
+    {
+      "check_id": "DEPS-006"
+    }
+  ],
+  "review_only": [
+    {
+      "check_id": "API-005",
+      "file": "supabase/functions/get-order/index.ts",
+      "note": "service role client, ids from body, no session-derived owner check"
+    },
+    {
+      "check_id": "AUTH-001",
+      "file": "src/pages/Admin.tsx",
+      "note": "admin page protected only by a client-side redirect"
+    },
+    {
+      "check_id": "AUTH-008",
+      "file": "supabase/config.toml",
+      "note": "email confirmations disabled in local config"
+    },
+    {
+      "check_id": "DB-020",
+      "file": "supabase/migrations/20240101000000_init.sql",
+      "note": "messages is in the realtime publication with an auth-only policy"
+    }
+  ],
+  "must_not_find": [
+    {
+      "check_id": "SEC-001",
+      "file": "src/integrations/supabase/client.ts",
+      "note": "publishable key is public by design"
+    },
+    {
+      "check_id": "SEC-006",
+      "file": "src/integrations/supabase/client.ts",
+      "note": "publishable key is public by design"
+    },
+    {
+      "check_id": "SEC-002",
+      "file": "src/integrations/supabase/client.ts"
+    }
+  ],
+  "max_false_positive_criticals": 0,
+  "planted_secrets": [
+    "sk-proj-Fx9aQz7kLm3pRt5vFx9aQz7kLm3pRt5vFx9aQz7kLm3pRt5v"
+  ]
+}

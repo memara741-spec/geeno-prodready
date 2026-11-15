@@ -1,0 +1,100 @@
+{
+  "stack": {
+    "framework": "vite-react",
+    "database": "firebase",
+    "builder": "bolt"
+  },
+  "must_find": [
+    {
+      "check_id": "DB-010",
+      "file": "firestore.rules"
+    },
+    {
+      "check_id": "DB-010",
+      "file": "storage.rules"
+    },
+    {
+      "check_id": "DB-011",
+      "file": "firestore.rules"
+    },
+    {
+      "check_id": "API-013",
+      "file": "functions/index.js"
+    },
+    {
+      "check_id": "SEC-015",
+      "file": "serviceAccountKey.json"
+    },
+    {
+      "check_id": "SEC-016"
+    },
+    {
+      "check_id": "FE-001",
+      "file": "src/components/Note.tsx"
+    },
+    {
+      "check_id": "PERF-006",
+      "file": "src/pages/Feed.tsx"
+    },
+    {
+      "check_id": "PERF-002",
+      "file": "src/pages/Feed.tsx"
+    },
+    {
+      "check_id": "PERF-003",
+      "file": "public/hero.png"
+    },
+    {
+      "check_id": "AUTH-006",
+      "file": "src/pages/Login.tsx"
+    },
+    {
+      "check_id": "LAUNCH-001",
+      "file": "index.html"
+    },
+    {
+      "check_id": "LAUNCH-002"
+    },
+    {
+      "check_id": "LAUNCH-005"
+    },
+    {
+      "check_id": "FE-007",
+      "file": "index.html"
+    },
+    {
+      "check_id": "PRIV-002",
+      "file": "index.html"
+    },
+    {
+      "check_id": "TEST-002"
+    }
+  ],
+  "review_only": [
+    {
+      "check_id": "AUTH-013",
+      "file": "firestore.rules",
+      "note": "any signed-in user can write any user document, including role and credits"
+    }
+  ],
+  "must_not_find": [
+    {
+      "check_id": "SEC-001",
+      "file": "src/firebase.ts",
+      "note": "the Firebase web config is public by design"
+    },
+    {
+      "check_id": "SEC-006",
+      "file": "src/firebase.ts",
+      "note": "the Firebase web config is public by design"
+    },
+    {
+      "check_id": "DEP-012",
+      "note": "the router has a catch-all route and hosting rewrites exist"
+    }
+  ],
+  "max_false_positive_criticals": 0,
+  "planted_secrets": [
+    "MIIEvFAKEfakeFAKEfakeFAKEfakeFAKEfakeFAKEfakeFAKEfakeFAKEfake"
+  ]
+}

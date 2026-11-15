@@ -1,0 +1,30 @@
+# Runs the prodready scan on every pull request and uploads the results to GitHub code scanning.
+# For stricter supply-chain control, pin each action by full commit hash (replace @v4 with the SHA and keep the tag in a comment).
+name: prodready
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch prodready at a pinned release
+        run: |
+          curl -fsSL -o prodready-skill.zip "https://github.com/memara741-spec/geeno-prodready/releases/download/v1.0.0/prodready-skill.zip"
+          unzip -q prodready-skill.zip -d .prodready-tool
+      - name: Scan (fails on confirmed critical findings)
+        run: python3 .prodready-tool/prodready/scripts/run_all.py . --fail-on critical --format sarif --out prodready.sarif --quiet
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: prodready.sarif

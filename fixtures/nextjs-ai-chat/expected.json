@@ -1,0 +1,116 @@
+{
+  "stack": {
+    "framework": "nextjs",
+    "llm": "openai",
+    "auth": "clerk"
+  },
+  "must_find": [
+    {
+      "check_id": "LLM-001",
+      "file": "app/api/chat/route.ts"
+    },
+    {
+      "check_id": "LLM-002",
+      "file": "app/api/chat/route.ts"
+    },
+    {
+      "check_id": "LLM-003",
+      "file": "app/api/chat/route.ts"
+    },
+    {
+      "check_id": "LLM-004",
+      "file": "app/api/chat/route.ts"
+    },
+    {
+      "check_id": "LLM-006",
+      "file": "components/Chat.tsx"
+    },
+    {
+      "check_id": "LLM-007",
+      "file": "lib/prompt.ts"
+    },
+    {
+      "check_id": "LLM-010",
+      "file": "README.md"
+    },
+    {
+      "check_id": "LLM-010",
+      "file": "lib/utils.ts"
+    },
+    {
+      "check_id": "API-006",
+      "file": "app/api/summarize/route.ts"
+    },
+    {
+      "check_id": "AUTH-002",
+      "file": "app/api/chat/route.ts"
+    },
+    {
+      "check_id": "SEC-006",
+      "file": "lib/prompt.ts"
+    },
+    {
+      "check_id": "SEC-007",
+      "file": ".next/static/chunks/app/page-0a1b2c3d.js"
+    },
+    {
+      "check_id": "SEC-007",
+      "file": "next.config.mjs"
+    },
+    {
+      "check_id": "REL-004",
+      "file": "lib/usage.ts"
+    },
+    {
+      "check_id": "DB-015"
+    },
+    {
+      "check_id": "DEP-003"
+    },
+    {
+      "check_id": "FE-008"
+    },
+    {
+      "check_id": "API-002"
+    }
+  ],
+  "review_only": [
+    {
+      "check_id": "PAY-010",
+      "file": "app/api/chat/route.ts",
+      "note": "credits are read then written back; concurrent requests spend one credit many times"
+    },
+    {
+      "check_id": "LLM-005",
+      "file": "app/api/summarize/route.ts",
+      "note": "fetched page content is placed in the prompt"
+    }
+  ],
+  "must_not_find": [
+    {
+      "check_id": "SEC-002",
+      "file": ".env.local",
+      "note": "ignored local env file; recorded in the inventory, not reported as committed"
+    },
+    {
+      "check_id": "SEC-001",
+      "file": ".env.local"
+    },
+    {
+      "check_id": "LLM-001",
+      "file": "app/api/summarize/route.ts",
+      "note": "this route checks the Clerk session"
+    },
+    {
+      "check_id": "FE-001",
+      "file": "components/Chat.tsx",
+      "note": "reported once, as LLM-006"
+    }
+  ],
+  "max_false_positive_criticals": 0,
+  "planted_secrets": [
+    "sk-ant-api03-Fx9aQz7kLm3pRt5vFx9aQz7kLm3pRt5vFx9aQz7kLm3pRt5vFx9aQz7kLm3pRt5v",
+    "sk-proj-Fx9aQz7kLm3pRt5vFx9aQz7kLm3pRt5vFx9aQz7kLm3pRt5v",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZha2VmaXh0dXJlcHJvanJlZjAxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcwMDAwMDAwMCwiZXhwIjoyMDAwMDAwMDAwfQ.prodreadyFixtureFakeSignature0000000000000"
+  ]
+}
