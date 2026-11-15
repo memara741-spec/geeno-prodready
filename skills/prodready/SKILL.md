@@ -16,6 +16,8 @@ Resolve every bundled path below against the directory that contains this `SKILL
 - Confirm in one sentence that the app is theirs or they are authorised to review it.
 - Ask at most one scoping question, and only if the user has not said: "Is this already live with real users, or pre-launch?" If live, follow "If the app is already live".
 - Tell the user in one sentence what will happen: scan, report, then fixes with their approval.
+- If the user's message already answers the ownership or live-or-pre-launch questions, do not ask them again.
+- Commands in this skill are written `python3`. On Windows use `python` (or `py -3`); `python3` there is often only the Microsoft Store stub.
 
 ## Phase 1: Detect
 
@@ -33,7 +35,7 @@ Scripts cannot judge logic. Read the code for the review-only checks in `referen
 
 ## Phase 4: Report
 
-Write the report using `references/report/template.md`, saved as `PRODREADY_REPORT.md` in the app root (or `.prodready/report.md` if the user prefers). Lead with the verdict. Present the verdict and the top three actions in chat; do not paste the whole report. Write in the user's language. Ask the owner questions from `inventory.owner_questions` in one batch.
+Write the report using `references/report/template.md`, saved as `PRODREADY_REPORT.md` in the app root (or `.prodready/report.md` if the user prefers). Produce it with `scripts/render_report.py <app_root> --findings .prodready/findings.json --narrative narrative.md --extra-findings extra.json --out PRODREADY_REPORT.md` (`--format html` for a shareable file). `extra.json` is `{"findings": [...]}` holding the review-only findings you added, in the schema in `references/workflow.md` section 2; `narrative.md` holds your rationale and any severity adjustments. When several findings share one check ID, group them in your explanation instead of listing each as a separate problem. Lead with the verdict. If the report's three first actions are not the ones you would tell the user (a leaked key always comes first), say so and give your own order in chat. Present the verdict and the top three actions in chat; do not paste the whole report. Write in the user's language. Ask the owner questions from `inventory.owner_questions` in one batch.
 
 Severity adjustments (explain each one in the report): raise one level for sensitive data (health, financial, identity, children, precise location, private messages); raise one level when the app is live; lower one level only when a compensating control demonstrably exists. Never lower a critical secrets or open-database finding because the app is small.
 

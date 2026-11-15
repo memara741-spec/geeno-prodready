@@ -47,8 +47,10 @@ def verdict(fs: List[Dict[str, Any]], accepted: Optional[List[str]] = None) -> D
 
 
 def top_three(fs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    # A leaked or browser-exposed key costs money immediately and cannot be fixed in code alone, so secrets come first.
     order = sorted([f for f in fs if f.get("status") not in ("ignored", "fixed", "dismissed") and f["severity"] in ("critical", "high")],
-                   key=lambda f: (-findings.severity_rank(f["severity"]), -findings.confidence_rank(f["confidence"]), f["check_id"]))
+                   key=lambda f: (0 if f["check_id"] in ("SEC-001", "SEC-002", "SEC-013", "SEC-014", "SEC-015") and f["severity"] == "critical" else 1,
+                                  -findings.severity_rank(f["severity"]), -findings.confidence_rank(f["confidence"]), f["check_id"]))
     seen, out = set(), []
     for f in order:
         if f["check_id"] not in seen:

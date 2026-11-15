@@ -5,9 +5,9 @@
 <div class="v BLOCKED">BLOCKED</div>
 <p>11 critical finding(s) are open: anyone can reach other people&#x27;s data, spend your money or take over accounts.</p>
 <h2>The three things to do first</h2>
-<p>1. Anyone on the internet can read and change every row in <code>profiles</code>, because the table has no access rules switched on. (<code>DB-001:supabase/migrations/20240101000000_init.sql:3</code>)</p>
-<p>2. Anyone on the internet can read, add, change and delete rows in <code>orders</code> without signing in. The access rule is switched on but lets everyone through. (<code>DB-002:supabase/migrations/20240101000000_init.sql:35</code>)</p>
-<p>3. The rule on <code>reviews</code> decides access from profile data that users can edit themselves, so any user can grant themselves that access. (<code>DB-005:supabase/migrations/20240110000000_accounts.sql:19</code>)</p>
+<p>1. The AI provider is called straight from the browser, so the key that pays for it is in every visitor&#x27;s hands. (<code>SEC-013:src/lib/ai.ts:6</code>)</p>
+<p>2. A real-looking OpenAI project, service account or admin key is saved in .env, a file that is part of the repository. Anyone who can see the repository has this key. (<code>SEC-002:.env:4</code>)</p>
+<p>3. Anyone on the internet can read and change every row in <code>profiles</code>, because the table has no access rules switched on. (<code>DB-001:supabase/migrations/20240101000000_init.sql:3</code>)</p>
 <h2>Summary</h2>
 <table>
 <tr><th>Severity</th><th>Open</th></tr>

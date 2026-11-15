@@ -11,9 +11,9 @@
 
 ## The three things to do first
 
-1. Anyone on the internet can read and change every row in `profiles`, because the table has no access rules switched on. (`DB-001:supabase/migrations/20240101000000_init.sql:3`)
-2. Anyone on the internet can read, add, change and delete rows in `orders` without signing in. The access rule is switched on but lets everyone through. (`DB-002:supabase/migrations/20240101000000_init.sql:35`)
-3. The rule on `reviews` decides access from profile data that users can edit themselves, so any user can grant themselves that access. (`DB-005:supabase/migrations/20240110000000_accounts.sql:19`)
+1. The AI provider is called straight from the browser, so the key that pays for it is in every visitor's hands. (`SEC-013:src/lib/ai.ts:6`)
+2. A real-looking OpenAI project, service account or admin key is saved in .env, a file that is part of the repository. Anyone who can see the repository has this key. (`SEC-002:.env:4`)
+3. Anyone on the internet can read and change every row in `profiles`, because the table has no access rules switched on. (`DB-001:supabase/migrations/20240101000000_init.sql:3`)
 
 ## Summary
 

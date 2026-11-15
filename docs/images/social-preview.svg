@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b1220"/><stop offset="1" stop-color="#12304a"/></linearGradient>
+    <linearGradient id="ac" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#38bdf8"/></linearGradient>
+  </defs>
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <g transform="translate(90 130) scale(1.7)">
+    <path d="M100 0 L200 40 V120 C200 188 156 234 100 256 C44 234 0 188 0 120 V40 Z" fill="none" stroke="url(#ac)" stroke-width="11" stroke-linejoin="round"/>
+    <path d="M58 124 L92 158 L148 92" fill="none" stroke="#2dd4bf" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g font-family="Segoe UI,system-ui,Arial,sans-serif">
+    <text x="490" y="250" font-size="78" font-weight="800" fill="#f8fafc">GEENO-</text>
+    <text x="490" y="335" font-size="78" font-weight="800" fill="#f8fafc">PRODREADY</text>
+    <text x="492" y="402" font-size="32" font-weight="600" fill="#5eead4">IS YOUR AI-BUILT APP SAFE TO LAUNCH?</text>
+    <text x="492" y="450" font-size="24" fill="#94a3b8">LOVABLE · BOLT · V0 · REPLIT · CURSOR · CLAUDE CODE</text>
+    <g font-size="20" font-weight="700">
+      <rect x="492" y="488" width="170" height="44" rx="22" fill="#134e4a"/><text x="577" y="518" text-anchor="middle" fill="#5eead4">187 CHECKS</text>
+      <rect x="678" y="488" width="200" height="44" rx="22" fill="#1e3a5f"/><text x="778" y="518" text-anchor="middle" fill="#7dd3fc">NO DEPENDENCIES</text>
+      <rect x="894" y="488" width="170" height="44" rx="22" fill="#3b2a5a"/><text x="979" y="518" text-anchor="middle" fill="#c4b5fd">MIT LICENSE</text>
+    </g>
+  </g>
+</svg>

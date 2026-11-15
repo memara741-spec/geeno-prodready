@@ -79,7 +79,7 @@ All scripts live in `skills/prodready/scripts/`. Every one answers `--help`.
 
 The scripts are useful alone, but the full workflow (review, report, fixes, verification) runs inside Claude.
 
-1. **Claude Code plugin** (not tested end to end yet):
+1. **Claude Code plugin** (tested: `claude plugin validate` passes, and the marketplace add and install below succeeded with Claude Code 2.1.325):
    ```bash
    claude plugin marketplace add memara741-spec/geeno-prodready
    claude plugin install prodready@prodready-marketplace
@@ -92,6 +92,13 @@ Then open your app in Claude and ask:
 > *Is this app ready to launch?*
 
 The plugin also adds `/prodready-audit`, `/prodready-fix` and `/prodready-launch`.
+
+## What was tested
+
+- **Install:** `claude plugin validate` passes. `claude plugin marketplace add` and `claude plugin install` from this repository succeed, and the plugin shows as enabled (version 1.0.0).
+- **Scanners:** 49 automated tests run on Linux, macOS and Windows with Python 3.9 and 3.13. Every planted problem in the nine sample apps is found, and the two clean sample apps produce no critical, high or medium findings.
+- **A fresh Claude session using the installed skill:** a separate Claude agent, given only the installed skill and a copy of the Lovable sample app, followed the phases and produced the right verdict (BLOCKED) with the planted critical problems, without ever seeing a secret value in plain text. It also found six rough edges in the instructions (the `python3` command on Windows, how to produce the report, the order of the first three actions, grouping of repeated findings, what to do when the user already answered the scoping questions). Those are fixed in this version.
+- **Not tested yet:** a full headless `claude -p` run on a real app, uploading the zip to the Claude apps, and the fix phase (branch, commits, verification) driven by Claude on a real project.
 
 ## Why this exists
 
@@ -288,7 +295,7 @@ python3 skills/prodready/scripts/run_all.py fixtures/lovable-supabase-vite --for
 
 ## التثبيت كمهارة لـ Claude
 
-1. **إضافة Claude Code** (لم تُجرَّب من البداية للنهاية بعد):
+1. **إضافة Claude Code** (جُرِّبت: `claude plugin validate` ينجح، والإضافة والتثبيت بالأمرين أدناه نجحا مع Claude Code 2.1.325):
    ```bash
    claude plugin marketplace add memara741-spec/geeno-prodready
    claude plugin install prodready@prodready-marketplace
@@ -297,6 +304,13 @@ python3 skills/prodready/scripts/run_all.py fixtures/lovable-supabase-vite --for
 3. **تطبيقات Claude** (بُني الـ zip وفُكّ وشُغّل؛ رفعه إلى Claude لم يُجرَّب بعد): شغّل `python3 tools/package.py` وارفع `dist/prodready-skill.zip` في إعدادات المهارات.
 
 ثم افتح تطبيقك في Claude واسأل: *هل هذا التطبيق جاهز للإطلاق؟*
+
+## ما الذي جُرِّب
+
+- **التثبيت:** `claude plugin validate` ينجح، وأمرا `marketplace add` و`install` من هذا المستودع ينجحان وتظهر الإضافة مفعّلة (الإصدار 1.0.0).
+- **الماسحات:** 49 اختباراً آلياً على Linux وmacOS وWindows بـ Python 3.9 و3.13. كل مشكلة مزروعة في التطبيقات النموذجية التسعة تُكتشف، والتطبيقان النظيفان لا يعطيان نتائج حرجة أو عالية أو متوسطة.
+- **جلسة Claude جديدة تستخدم المهارة المثبّتة:** وكيل Claude منفصل، لم يُعطَ إلا المهارة المثبّتة ونسخة من تطبيق Lovable النموذجي، اتّبع المراحل وخرج بالحكم الصحيح (BLOCKED) مع المشاكل الحرجة المزروعة، ولم يرَ أي قيمة سرية بنص صريح. ووجد ست نقاط خشنة في التعليمات (أمر `python3` على Windows، وطريقة إنتاج التقرير، وترتيب أول ثلاثة إجراءات، وتجميع النتائج المتكررة، وما يُفعل إذا أجاب المستخدم مسبقاً عن أسئلة التحديد). أُصلحت في هذا الإصدار.
+- **لم يُجرَّب بعد:** تشغيل كامل بـ `claude -p` على تطبيق حقيقي، ورفع الـ zip إلى تطبيقات Claude، ومرحلة الإصلاح (فرع والتزامات وتحقق) بقيادة Claude على مشروع حقيقي.
 
 ## لماذا هذا المشروع
 
