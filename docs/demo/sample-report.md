@@ -1,6 +1,6 @@
 # prodready report: Souq Local (fixture)
 
-**Date:** 2026-01-01 · **Tool version:** 1.1.0 · **Files scanned:** 25
+**Date:** 2026-01-01 · **Tool version:** 1.2.0 · **Files scanned:** 25
 **Audited:** automated scan of source files and configuration, plus code review. **Not audited:** anything configured only in dashboards, the live site, and areas listed in the appendix.
 
 ## Verdict
@@ -787,7 +787,7 @@ See `references/checks/launch.md`. Status of each item is filled in at the launc
 - resend (email): email addresses and message content
 - supabase (database and auth): accounts, all app data
 
-**Scanners:** scan_secrets (ran), scan_env (ran), scan_supabase (ran), scan_firebase (ran), scan_routes (ran), scan_payments (ran), scan_llm (ran), scan_frontend (ran), scan_config (ran), scan_deps (ran), scan_launch (ran), scan_laravel (ran), scan_tenancy (ran), scan_logic (ran), scan_performance (ran), scan_infra (ran), scan_git_history (skipped)
+**Scanners:** scan_secrets (ran), scan_env (ran), scan_supabase (ran), scan_firebase (ran), scan_routes (ran), scan_payments (ran), scan_llm (ran), scan_frontend (ran), scan_config (ran), scan_deps (ran), scan_launch (ran), scan_laravel (ran), scan_tenancy (ran), scan_logic (ran), scan_performance (ran), scan_infra (ran), scan_authz (ran), scan_ledger (ran), scan_git_history (skipped)
 
 **Warnings:**
 - scan_deps: full vulnerability audit skipped (offline). Only the bundled advisory table was used; run `npm audit` or pass --allow-network.

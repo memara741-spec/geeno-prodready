@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.join(helpers.REPO, "tools"))
 import check_text  # noqa: E402
 
 REFS = os.path.join(helpers.SKILL, "references")
-SCANNERS = ["scan_secrets", "scan_env", "scan_supabase", "scan_firebase", "scan_routes", "scan_payments", "scan_llm", "scan_frontend", "scan_config", "scan_deps", "scan_launch", "scan_git_history", "scan_laravel", "scan_tenancy", "scan_logic", "scan_performance", "scan_infra"]
+SCANNERS = ["scan_secrets", "scan_env", "scan_supabase", "scan_firebase", "scan_routes", "scan_payments", "scan_llm", "scan_frontend", "scan_config", "scan_deps", "scan_launch", "scan_git_history", "scan_laravel", "scan_tenancy", "scan_logic", "scan_performance", "scan_infra", "scan_authz", "scan_ledger", "profile_runtime", "verify_production"]
 
 
 class Consistency(unittest.TestCase):

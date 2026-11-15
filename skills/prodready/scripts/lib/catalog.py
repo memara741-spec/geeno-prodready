@@ -42,6 +42,9 @@ CATEGORIES: Dict[str, Dict[str, str]] = {
     "TEN": {"slug": "multitenancy", "name": "Multi-tenant isolation"},
     "BIZ": {"slug": "business-logic", "name": "Business logic and money"},
     "INFRA": {"slug": "infrastructure", "name": "Production infrastructure"},
+    "AUTHZ": {"slug": "authorization", "name": "Record-level authorization"},
+    "FIN": {"slug": "financial-integrity", "name": "Financial integrity"},
+    "PROD": {"slug": "production-runtime", "name": "Live production verification"},
 }
 
 _ROWS = """
@@ -280,6 +283,21 @@ INFRA-006|medium|scan|assisted+owner|laravel|scan_infra|No database backup job d
 INFRA-007|medium|scan|assisted|laravel, php, node|scan_infra|Deploy builds without production optimisation
 INFRA-008|high|scan|assisted+owner|docker compose|scan_infra|Database or cache port published to the internet, or default password
 INFRA-009|low|scan|auto/assisted|laravel|scan_infra|Logs are never rotated
+AUTHZ-001|high|scan|assisted|laravel|scan_authz|Policy exists but nothing enforces it
+AUTHZ-002|high|scan|assisted|laravel|scan_authz|Policy rule never compares the user with the record
+AUTHZ-003|high|scan|assisted|laravel|scan_authz|Some operations on a record are checked and others are not
+AUTHZ-004|high|scan|assisted|laravel|scan_authz|Policy rule always allows
+FIN-001|critical|scan|assisted|laravel|scan_ledger|Balance changed with no ledger entry
+FIN-002|high|scan|assisted|laravel|scan_ledger|Transfer takes money from one account without adding it to another
+FIN-003|high|scan|assisted|laravel|scan_ledger|Balance column can go negative
+FIN-004|high|scan|assisted|laravel|scan_ledger|Money table has no unique key against duplicates
+PERF-013|medium|scan|assisted|laravel|profile_runtime|Page runs too many database queries (measured)
+PERF-014|medium|scan|assisted|laravel|profile_runtime|Same query repeated many times (measured N+1)
+PERF-015|medium|scan|assisted|laravel|profile_runtime|Slow response or high memory use (measured)
+PROD-001|high|scan|owner|web|verify_production|Certificate invalid or close to expiry
+PROD-002|high|scan|owner|web|verify_production|Plain HTTP not redirected to HTTPS, or old TLS accepted
+PROD-003|critical|scan|assisted+owner|web|verify_production|Sensitive file or debug tool reachable on the live site
+PROD-004|medium|scan|owner|laravel|verify_production|Scheduler, queue or backup heartbeat is stale
 """
 
 

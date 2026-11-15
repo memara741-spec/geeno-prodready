@@ -22,6 +22,7 @@ class WalletController extends Controller
             abort_if($from->balance < $data['amount'], 422, 'Insufficient funds');
             $from->decrement('balance', $data['amount']);
             $to->increment('balance', $data['amount']);
+            DB::table('ledger_entries')->insert([['wallet_id' => $from->id, 'amount' => -$data['amount'], 'reason' => 'transfer'], ['wallet_id' => $to->id, 'amount' => $data['amount'], 'reason' => 'transfer']]);
             DB::table('transfers')->insert(['idempotency_key' => $data['idempotency_key'], 'from' => $from->id, 'to' => $to->id, 'amount' => $data['amount']]);
         });
 

@@ -43,6 +43,12 @@ What this covers: how to review a Laravel 11, 12 or 13 app after `scan_laravel`,
 | `PERF-007` | `with()`, and `Model::preventLazyLoading(! app()->isProduction())` in `AppServiceProvider::boot()` |
 | `INFRA-001` | nginx `root /var/www/html/public;` and `location ~ /\.(?!well-known) { deny all; }` |
 
+## Authorization, money and live checks
+
+- `scan_authz` writes `inventory.authorization`: one row per controller action that works on a record, with whether it is checked. Read the unchecked write rows first.
+- `scan_ledger` expects every balance change to leave a ledger row inside the same transaction; ask the owner how the books are reconciled.
+- `profile_runtime.py` needs the middleware in `assets/laravel/ProdreadyProfile.php` on a local or staging copy; `verify_production.py` needs `assets/laravel/prodready-health.php` for scheduler, queue and backup status.
+
 ## Verification
 
 Run `scripts/generate_regression_tests.py`, copy the PHP tests into `tests/Feature/`, run them before the fix (they must fail) and after (they must pass), then run the app's own `php artisan test`. If PHP is not installed, say which tests could not run.

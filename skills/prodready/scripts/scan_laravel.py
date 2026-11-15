@@ -27,7 +27,7 @@ from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from lib import catalog, findings, phpscan, walker  # noqa: E402
+from lib import catalog, findings, phpflow, phpscan, walker  # noqa: E402
 from lib.findings import Envelope, Finding  # noqa: E402
 
 IMPLEMENTS = catalog.by_scanner("scan_laravel")
@@ -69,6 +69,12 @@ def scan(root: str, stack: Optional[Dict[str, Any]], project: walker.Project) ->
     env.inventory["laravel"] = {"detected": True, "major": major, "livewire": "livewire/livewire" in comp["require"], "sanctum": "laravel/sanctum" in comp["require"], "spatie_permission": "spatie/laravel-permission" in comp["require"]}
     pfs = [p for p in phpscan.php_files(project) if not walker.TEST_PATH_RE.search(p.rel) and not p.rel.startswith(("database/factories/", "database/seeders/"))]
     models = phpscan.model_class_names(project)
+    _ct: Dict[str, Any] = {}
+
+    def ct_of(pf: phpscan.PhpFile) -> Dict[str, Any]:
+        if pf.rel not in _ct:
+            _ct[pf.rel] = phpflow.class_taint(pf)
+        return _ct[pf.rel]
 
     def add(check: str, pf: phpscan.PhpFile, offset: int, message: str, confidence: str = "likely", detail: str = "", fix: str = "", severity: Optional[str] = None, subject: Optional[Dict[str, str]] = None) -> None:
         line = pf.line(offset)
@@ -148,10 +154,15 @@ def scan(root: str, stack: Optional[Dict[str, Any]], project: walker.Project) ->
                     first_end = k
                 k += 1
             arg = pf.code[open_idx + 1:first_end if first_end else k]
-            interpolated = bool(re.search(r'"[^"]*\$[\w{]', arg) or re.search(r"['\"]\s*\.\s*\$|\$\w+(?:->\w+|\[[^\]]*\])*\s*\.\s*['\"]|\bsprintf\s*\(|\bimplode\s*\(", arg))
+            interpolated = bool(re.search(r"\"[^\"]*\$[\w{]|[\"']\s*\.\s*\$|\$\w+(?:->\w+|\[[^\]]*\])*\s*\.\s*[\"']|sprintf\s*\(|implode\s*\(", arg))
+            meth = pf.method_at(m.start())
+            tv = ct_of(pf).get(meth["name"], set()) if meth else set()
+            via_var = False
+            if not interpolated and meth and re.fullmatch(r"\s*\$\w+\s*", arg) and arg.strip() in phpflow.built_vars(meth["body"]):
+                interpolated, via_var = True, True
             if interpolated:
-                taint = bool(re.search(r"\$request|\$input|\$search|\$query|\$q\b|\$term|\$keyword|\$filter|\$_(GET|POST|REQUEST)|request\(", arg))
-                add("LARA-004", pf, m.start(), "A raw SQL string is built from a variable, so whoever controls that value can run their own SQL against your database.", "confirmed" if taint else "likely",
+                taint = phpflow.reaches(arg, tv) or bool(re.search(r"\$request|\$_(GET|POST|REQUEST)|request\(", arg))
+                add("LARA-004", pf, m.start(), "A raw SQL string is built from a variable, so whoever controls that value can run their own SQL against your database.", ("confirmed" if taint and not via_var else "likely") if taint else "possible",
                     detail="The first argument of `%s` contains a variable instead of a `?` placeholder." % m.group(0).strip("( ").strip(">-"), fix="Pass values as bindings: `whereRaw('name like ?', [\"%$q%\"])`, or use the query builder.")
 
     # Blade: LARA-005 and Volt components
@@ -212,10 +223,10 @@ def scan(root: str, stack: Optional[Dict[str, Any]], project: walker.Project) ->
     for pf in pfs:
         for meth in pf.methods():
             body = meth["body"]
-            tainted = set(re.findall(r"(\$\w+)\s*=\s*[^;=]*(?:\$request->|\brequest\s*\(|\$_(?:GET|POST|REQUEST|COOKIE))", body))
+            tainted = ct_of(pf).get(meth["name"], set())
             for m in re.finditer(r"->(?:assignRole|syncRoles|givePermissionTo|syncPermissions)\s*\(([^;]*)\)\s*;", body):
                 a = m.group(1)
-                if (taint_src.search(a) or any(t in a for t in tainted)) and not re.search(r"authorize\w*\s*\(|Gate::|hasRole|hasPermissionTo|->can\s*\(|hasAnyRole", body):
+                if phpflow.reaches(a, tainted) and not re.search(r"authorize\w*\s*\(|Gate::|hasRole|hasPermissionTo|->can\s*\(|hasAnyRole", body):
                     add("LARA-009", pf, meth["body_start"] + m.start(), "A role or permission is handed out from request input with no check that the caller may do that. Any signed-in user can make themselves an administrator.", "likely",
                         subject={"kind": "method", "name": pf.rel + "::" + meth["name"]}, fix="Authorise the caller (`$this->authorize('assign-roles')`) and validate the role against a fixed list with `Rule::in([...])`.")
             for m in re.finditer(r"\b(shell_exec|exec|system|passthru|proc_open|popen|eval|unserialize|assert|Process::fromShellCommandline|Process::run)\s*\(([^;]*)\)", body):

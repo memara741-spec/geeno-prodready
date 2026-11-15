@@ -196,3 +196,7 @@ T = {
 from check_text_v11 import T_NEW  # noqa: E402
 
 T.update(T_NEW)
+
+from check_text_v12 import T_NEW2  # noqa: E402
+
+T.update(T_NEW2)

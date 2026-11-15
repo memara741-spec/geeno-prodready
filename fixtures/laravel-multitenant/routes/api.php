@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ReportController;
@@ -23,6 +24,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/users/avatar', [UserController::class, 'avatar']);
     Route::post('/users/convert', [UserController::class, 'convert']);
     Route::get('/reports/summary', [ReportController::class, 'summary']);
+    Route::get('/documents/{document}', [DocumentController::class, 'show']);
+    Route::delete('/documents/{document}', [DocumentController::class, 'destroy']);
     Route::post('/switch-company', [ProjectController::class, 'switchCompany']);
 });
 

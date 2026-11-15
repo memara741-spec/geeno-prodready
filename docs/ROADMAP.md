@@ -5,3 +5,12 @@
 3. A real lockfile for `clean-nextjs-supabase` and an end-to-end "fix keeps the app building" test.
 4. Stack-specific code examples inside each check entry, and more fixtures (many scan checks are not yet planted in any fixture).
 5. A fuller offline advisory table, generated from vendor data at release time.
+
+## Done in 1.2.0, and what is left
+
+- PHP analysis: a token-level data-flow engine (`lib/phpflow.py`) is in. A full PHP AST (cross-class calls, container-resolved services, traits) is still open; a PHP-binary-backed `token_get_all` mode is one way to get there.
+- Authorization: policies and per-action checks are in (`scan_authz`). Running the policies against seeded users is still open.
+- Financial integrity: static ledger, transfer and uniqueness checks are in (`scan_ledger`) plus a generated double-spend test. Replaying real data to prove the books balance is open.
+- Runtime profiling: query, repeat, time and memory measurement is in (`profile_runtime.py`, Laravel middleware). Node and Django profilers are open.
+- Tenant isolation: a generated two-tenant test is in. Running it automatically against a disposable database is open.
+- Production verification: certificate, redirect, TLS, exposed files and a health report are in (`verify_production.py`). Disk space, database dumps and process lists need an agent on the server and are open.

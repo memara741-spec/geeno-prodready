@@ -241,6 +241,21 @@ Every check, with default severity, mode and the script that implements it. Gene
 | [INFRA-007](infrastructure.md#infra-007) | Deploy builds without production optimisation | medium | scan | laravel, php, node | scan_infra |
 | [INFRA-008](infrastructure.md#infra-008) | Database or cache port published to the internet, or default password | high | scan | docker compose | scan_infra |
 | [INFRA-009](infrastructure.md#infra-009) | Logs are never rotated | low | scan | laravel | scan_infra |
+| [AUTHZ-001](authorization.md#authz-001) | Policy exists but nothing enforces it | high | scan | laravel | scan_authz |
+| [AUTHZ-002](authorization.md#authz-002) | Policy rule never compares the user with the record | high | scan | laravel | scan_authz |
+| [AUTHZ-003](authorization.md#authz-003) | Some operations on a record are checked and others are not | high | scan | laravel | scan_authz |
+| [AUTHZ-004](authorization.md#authz-004) | Policy rule always allows | high | scan | laravel | scan_authz |
+| [FIN-001](financial-integrity.md#fin-001) | Balance changed with no ledger entry | critical | scan | laravel | scan_ledger |
+| [FIN-002](financial-integrity.md#fin-002) | Transfer takes money from one account without adding it to another | high | scan | laravel | scan_ledger |
+| [FIN-003](financial-integrity.md#fin-003) | Balance column can go negative | high | scan | laravel | scan_ledger |
+| [FIN-004](financial-integrity.md#fin-004) | Money table has no unique key against duplicates | high | scan | laravel | scan_ledger |
+| [PERF-013](performance.md#perf-013) | Page runs too many database queries (measured) | medium | scan | laravel | profile_runtime |
+| [PERF-014](performance.md#perf-014) | Same query repeated many times (measured N+1) | medium | scan | laravel | profile_runtime |
+| [PERF-015](performance.md#perf-015) | Slow response or high memory use (measured) | medium | scan | laravel | profile_runtime |
+| [PROD-001](production-runtime.md#prod-001) | Certificate invalid or close to expiry | high | scan | web | verify_production |
+| [PROD-002](production-runtime.md#prod-002) | Plain HTTP not redirected to HTTPS, or old TLS accepted | high | scan | web | verify_production |
+| [PROD-003](production-runtime.md#prod-003) | Sensitive file or debug tool reachable on the live site | critical | scan | web | verify_production |
+| [PROD-004](production-runtime.md#prod-004) | Scheduler, queue or backup heartbeat is stale | medium | scan | laravel | verify_production |
 
 ## Review-only checks
 

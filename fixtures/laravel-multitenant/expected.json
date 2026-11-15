@@ -221,6 +221,42 @@
     {
       "check_id": "INFRA-009",
       "file": ".env"
+    },
+    {
+      "check_id": "AUTHZ-001",
+      "file": "app/Policies/ProjectPolicy.php"
+    },
+    {
+      "check_id": "AUTHZ-002",
+      "file": "app/Policies/InvoicePolicy.php"
+    },
+    {
+      "check_id": "AUTHZ-003",
+      "file": "app/Http/Controllers/DocumentController.php"
+    },
+    {
+      "check_id": "AUTHZ-004",
+      "file": "app/Policies/InvoicePolicy.php"
+    },
+    {
+      "check_id": "FIN-001",
+      "file": "app/Http/Controllers/WalletController.php"
+    },
+    {
+      "check_id": "FIN-001",
+      "file": "app/Jobs/ProcessPayout.php"
+    },
+    {
+      "check_id": "FIN-002",
+      "file": "app/Services/WalletService.php"
+    },
+    {
+      "check_id": "FIN-003",
+      "file": "database/migrations/2025_01_01_000002_create_wallets_table.php"
+    },
+    {
+      "check_id": "FIN-004",
+      "file": "database/migrations/2025_01_01_000002_create_wallets_table.php"
     }
   ],
   "must_not_find": [
@@ -238,6 +274,11 @@
       "check_id": "LARA-010",
       "file": "app/Http/Controllers/BookingController.php",
       "note": "validated before the write"
+    },
+    {
+      "check_id": "AUTHZ-003",
+      "file": "app/Http/Controllers/InvoiceController.php",
+      "note": "no action in this controller authorizes, so none is singled out (API-021 covers it)"
     }
   ],
   "max_false_positive_criticals": 0,

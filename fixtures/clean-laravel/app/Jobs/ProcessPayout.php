@@ -26,6 +26,7 @@ class ProcessPayout implements ShouldQueue, ShouldBeUnique
         DB::transaction(function () {
             $wallet = Wallet::lockForUpdate()->findOrFail($this->walletId);
             $wallet->decrement('balance', 10);
+            DB::table('ledger_entries')->insert(['wallet_id' => $wallet->id, 'amount' => -10, 'reason' => 'payout']);
         });
     }
 }

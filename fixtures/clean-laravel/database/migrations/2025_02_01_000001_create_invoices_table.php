@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -33,6 +34,16 @@ return new class extends Migration
             $table->decimal('balance', 12, 2)->default(0);
             $table->timestamps();
         });
+
+        Schema::create('ledger_entries', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('wallet_id')->constrained();
+            $table->decimal('amount', 12, 2);
+            $table->string('reason');
+            $table->timestamps();
+        });
+
+        DB::statement('ALTER TABLE wallets ADD CONSTRAINT wallets_balance_nonneg CHECK (balance >= 0)');
 
         Schema::create('transfers', function (Blueprint $table) {
             $table->id();

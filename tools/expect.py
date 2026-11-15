@@ -26,7 +26,7 @@ from lib import catalog, findings, walker  # noqa: E402
 
 SCANNERS = [
     "scan_secrets", "scan_env", "scan_supabase", "scan_firebase", "scan_routes", "scan_payments", "scan_llm",
-    "scan_frontend", "scan_config", "scan_deps", "scan_launch", "scan_laravel", "scan_tenancy", "scan_logic", "scan_performance", "scan_infra",
+    "scan_frontend", "scan_config", "scan_deps", "scan_launch", "scan_laravel", "scan_tenancy", "scan_logic", "scan_performance", "scan_infra", "scan_authz", "scan_ledger",
 ]
 FIXTURES = [
     "lovable-supabase-vite", "nextjs-supabase-stripe", "nextjs-prisma-authjs", "firebase-react", "express-mongo-jwt",

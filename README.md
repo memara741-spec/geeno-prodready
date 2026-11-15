@@ -16,7 +16,7 @@
   <img alt="license" src="https://img.shields.io/badge/license-MIT-2dd4bf">
   <img alt="python" src="https://img.shields.io/badge/python-3.9%2B-38bdf8">
   <img alt="dependencies" src="https://img.shields.io/badge/dependencies-none-a78bfa">
-  <img alt="checks" src="https://img.shields.io/badge/checks-235-fbbf24">
+  <img alt="checks" src="https://img.shields.io/badge/checks-250-fbbf24">
   <img alt="telemetry" src="https://img.shields.io/badge/telemetry-none-34d399">
 </p>
 
@@ -96,7 +96,7 @@ The plugin also adds `/prodready-audit`, `/prodready-fix` and `/prodready-launch
 ## What was tested
 
 - **Install:** `claude plugin validate` passes. `claude plugin marketplace add` and `claude plugin install` from this repository succeed, and the plugin shows as enabled (version 1.0.0; the 1.1.0 additions are covered by the automated tests, the plugin was not reinstalled for them).
-- **Scanners:** 71 automated tests run on Linux, macOS and Windows with Python 3.9 and 3.13. Every planted problem in the eleven sample apps is found, and the three clean sample apps produce no critical, high or medium findings.
+- **Scanners:** 82 automated tests run on Linux, macOS and Windows with Python 3.9 and 3.13. Every planted problem in the eleven sample apps is found, and the three clean sample apps produce no critical, high or medium findings.
 - **A fresh Claude session using the installed skill:** a separate Claude agent, given only the installed skill and a copy of the Lovable sample app, followed the phases and produced the right verdict (BLOCKED) with the planted critical problems, without ever seeing a secret value in plain text. It also found six rough edges in the instructions (the `python3` command on Windows, how to produce the report, the order of the first three actions, grouping of repeated findings, what to do when the user already answered the scoping questions). Those are fixed in this version.
 - **Not tested yet:** a full headless `claude -p` run on a real app, uploading the zip to the Claude apps, and the fix phase (branch, commits, verification) driven by Claude on a real project.
 
@@ -129,6 +129,36 @@ php artisan test --filter=Prodready
 ```
 
 The tests are a starting point: the unauthenticated-access, rate-limit and other-user's-record tests are built from your own routes, and the arrange steps use model factories you may need to adjust.
+
+## New in 1.2: deeper analysis and live verification
+
+Six more additions. The first four read code; the last two touch a running app, only with your explicit flags.
+
+| # | Addition | What it really does | Checks / tool |
+|---|---|---|---|
+| 1 | **PHP data-flow engine** | Follows request input through assignments, loops, string building and calls between methods of one class, and clears it at casts and sanitisers. Replaces line-by-line regexes for SQL, command and role findings. *It is a token-level engine, not a full PHP AST: it does not follow calls across classes or container-resolved services.* | `lib/phpflow.py` |
+| 2 | **Deep authorization audit** | Policy by policy and action by action: policies nothing calls, rules that ignore the record or always return true, controller actions that skip the check their siblings make. The matrix is in the scan output. | `AUTHZ-001` to `AUTHZ-004` |
+| 3 | **Financial integrity engine** | Balance changes with no ledger row, transfers that debit without crediting, balance columns that can go negative, payment tables with no unique key. With `BIZ-001` to `BIZ-003` it covers double spending and duplicates. It does not replay your data. | `FIN-001` to `FIN-004` |
+| 4 | **Runtime performance profiler** | Measures queries per page, the most repeated query (a real N+1), time and memory on a running copy of your app, using a small middleware you install. | `PERF-013` to `PERF-015`, `profile_runtime.py` |
+| 5 | **Tenant isolation testing** | Generates a test that creates two tenants with a user each and tries to reach the other tenant's records through the model and through show routes. | `ProdreadyTenantIsolationTest.php` |
+| 6 | **Production runtime verification** | Read-only checks of the live site: certificate validity and expiry, HTTP to HTTPS redirect, old TLS, exposed `.env`, logs and debug dashboards, plus a token-protected health report for the scheduler, queue and backups. | `PROD-001` to `PROD-004`, `verify_production.py` |
+
+```bash
+# Measure a local or staging copy (install assets/laravel/ProdreadyProfile.php first)
+PRODREADY_PROFILE_KEY=secret python skills/prodready/scripts/profile_runtime.py \
+  --base-url http://localhost:8000 --app-root ./my-app --i-own-this
+
+# Verify your live site, read-only (GET and HEAD, at most 40 requests)
+PRODREADY_HEALTH_TOKEN=secret python skills/prodready/scripts/verify_production.py \
+  --url https://app.example.com --health-url https://app.example.com/prodready/health \
+  --allow-network --i-own-this
+
+# Generate the isolation and double-spend tests along with the others
+python skills/prodready/scripts/generate_regression_tests.py ./my-app
+php artisan test --filter=Prodready
+```
+
+The runtime tools never send anything but GET and HEAD, never store response bodies and refuse to run without `--i-own-this`. Both were tested against a local stub server in the test suite; they were not run against a real production site.
 
 ## Why this exists
 
@@ -175,7 +205,7 @@ The report opens with the verdict and three actions, then shows an access table 
 
 ## What it checks
 
-<p align="center"><img src="docs/images/categories.svg" alt="235 checks in 22 categories" width="100%"></p>
+<p align="center"><img src="docs/images/categories.svg" alt="250 checks in 25 categories" width="100%"></p>
 
 Every check has a plain-words explanation, why it matters, how to fix it and how to verify the fix. The full list is in [`references/checks/INDEX.md`](skills/prodready/references/checks/INDEX.md).
 
@@ -237,7 +267,7 @@ Exit code 1 means a confirmed finding at or above the chosen severity.
 skills/prodready/      the skill: SKILL.md, scripts/, references/, assets/
 commands/  agents/     optional Claude Code plugin extras
 fixtures/              eleven sample apps with planted problems and expected results
-tests/                 71 tests (scanners, report, probe, packaging, Laravel, regression tests)
+tests/                 82 tests (scanners, report, probe, packaging, Laravel, runtime tools, regression tests)
 tools/                 maintainer scripts (package, generate references, demo)
 evals/                 prompts and a rubric for testing the skill itself
 docs/                  decisions, roadmap, authoring guide, images, sample report
@@ -339,7 +369,7 @@ python3 skills/prodready/scripts/run_all.py fixtures/lovable-supabase-vite --for
 ## ما الذي جُرِّب
 
 - **التثبيت:** `claude plugin validate` ينجح، وأمرا `marketplace add` و`install` من هذا المستودع ينجحان وتظهر الإضافة مفعّلة (الإصدار 1.0.0؛ إضافات 1.1.0 مغطاة بالاختبارات الآلية ولم تُعد تثبيت الإضافة لها).
-- **الماسحات:** 71 اختباراً آلياً على Linux وmacOS وWindows بـ Python 3.9 و3.13. كل مشكلة مزروعة في التطبيقات النموذجية الأحد عشر تُكتشف، والتطبيقات النظيفة الثلاثة لا تعطي نتائج حرجة أو عالية أو متوسطة.
+- **الماسحات:** 82 اختباراً آلياً على Linux وmacOS وWindows بـ Python 3.9 و3.13. كل مشكلة مزروعة في التطبيقات النموذجية الأحد عشر تُكتشف، والتطبيقات النظيفة الثلاثة لا تعطي نتائج حرجة أو عالية أو متوسطة.
 - **جلسة Claude جديدة تستخدم المهارة المثبّتة:** وكيل Claude منفصل، لم يُعطَ إلا المهارة المثبّتة ونسخة من تطبيق Lovable النموذجي، اتّبع المراحل وخرج بالحكم الصحيح (BLOCKED) مع المشاكل الحرجة المزروعة، ولم يرَ أي قيمة سرية بنص صريح. ووجد ست نقاط خشنة في التعليمات (أمر `python3` على Windows، وطريقة إنتاج التقرير، وترتيب أول ثلاثة إجراءات، وتجميع النتائج المتكررة، وما يُفعل إذا أجاب المستخدم مسبقاً عن أسئلة التحديد). أُصلحت في هذا الإصدار.
 - **لم يُجرَّب بعد:** تشغيل كامل بـ `claude -p` على تطبيق حقيقي، ورفع الـ zip إلى تطبيقات Claude، ومرحلة الإصلاح (فرع والتزامات وتحقق) بقيادة Claude على مشروع حقيقي.
 
@@ -372,6 +402,36 @@ php artisan test --filter=Prodready
 ```
 
 الاختبارات نقطة بداية: اختبارات الوصول بلا تسجيل دخول وحد الطلبات وسجلات المستخدمين الآخرين مبنية من مساراتك أنت، وخطوات التجهيز تستخدم Factories قد تحتاج تعديلها.
+
+## جديد في الإصدار 1.2: تحليل أعمق وتحقق حيّ
+
+ست إضافات أخرى. الأربع الأولى تقرأ الكود، والأخيرتان تتصلان بتطبيق يعمل وبأعلام صريحة منك فقط.
+
+| # | الإضافة | ماذا تفعل فعلاً | الفحوصات / الأداة |
+|---|---|---|---|
+| 1 | **محرك تتبع تدفق البيانات في PHP** | يتتبع مدخلات الطلب عبر الإسنادات والحلقات وبناء النصوص والاستدعاءات بين دوال الصنف الواحد، ويُسقطها عند التحويلات والمعقِّمات. يحل محل فحص الأسطر المنفردة في نتائج SQL والأوامر والأدوار. *هو محرك على مستوى الرموز وليس AST كاملاً لـ PHP: لا يتتبع الاستدعاءات بين الأصناف ولا الخدمات التي تحلّها الحاوية.* | `lib/phpflow.py` |
+| 2 | **تدقيق الصلاحيات العميق** | سياسة سياسة وإجراء إجراء: سياسات لا يستدعيها أحد، وقواعد تتجاهل السجل أو ترجع true دائماً، وإجراءات في المتحكم تتخطى الفحص الذي تجريه أخواتها. المصفوفة في ناتج الفحص. | `AUTHZ-001` إلى `AUTHZ-004` |
+| 3 | **محرك السلامة المالية** | تغيير رصيد بلا سجل في دفتر الأستاذ، تحويل يخصم دون أن يُضيف، عمود رصيد يقبل السالب، جدول مدفوعات بلا مفتاح فريد. مع `BIZ-001` إلى `BIZ-003` يغطي الإنفاق المزدوج والتكرار. لا يعيد تشغيل بياناتك. | `FIN-001` إلى `FIN-004` |
+| 4 | **قياس الأداء أثناء التشغيل** | يقيس عدد الاستعلامات في الصفحة وأكثر استعلام تكراراً (N+1 حقيقي) والزمن والذاكرة على نسخة تعمل من تطبيقك، عبر Middleware صغير تثبّته. | `PERF-013` إلى `PERF-015`، `profile_runtime.py` |
+| 5 | **اختبار عزل المستأجرين** | يولّد اختباراً ينشئ مستأجرين ومستخدماً لكل منهما ويحاول الوصول إلى سجلات الآخر عبر الموديل وعبر مسارات العرض. | `ProdreadyTenantIsolationTest.php` |
+| 6 | **التحقق من الإنتاج الفعلي** | فحوصات قراءة فقط للموقع الحي: صلاحية الشهادة وقرب انتهائها، التحويل من HTTP إلى HTTPS، إصدارات TLS القديمة، `.env` والسجلات ولوحات التصحيح المكشوفة، وتقرير صحة محمي بتوكن لحالة الـ scheduler والـ queue والنسخ الاحتياطية. | `PROD-001` إلى `PROD-004`، `verify_production.py` |
+
+```bash
+# قياس نسخة محلية أو staging (ثبّت assets/laravel/ProdreadyProfile.php أولاً)
+PRODREADY_PROFILE_KEY=secret python skills/prodready/scripts/profile_runtime.py \
+  --base-url http://localhost:8000 --app-root ./my-app --i-own-this
+
+# التحقق من موقعك الحي بقراءة فقط (GET وHEAD، حتى 40 طلباً)
+PRODREADY_HEALTH_TOKEN=secret python skills/prodready/scripts/verify_production.py \
+  --url https://app.example.com --health-url https://app.example.com/prodready/health \
+  --allow-network --i-own-this
+
+# توليد اختبارات العزل والإنفاق المزدوج مع بقية الاختبارات
+python skills/prodready/scripts/generate_regression_tests.py ./my-app
+php artisan test --filter=Prodready
+```
+
+أدوات التشغيل الحي لا ترسل إلا GET وHEAD ولا تخزّن محتوى الاستجابات وترفض العمل بلا `--i-own-this`. جُرّبت ضمن اختبارات المشروع على خادم محلي وهمي، ولم تُشغَّل على موقع إنتاج حقيقي.
 
 ## لماذا هذا المشروع
 

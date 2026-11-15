@@ -15,6 +15,14 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        Schema::create('payments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained();
+            $table->string('provider_ref');
+            $table->decimal('amount', 12, 2);
+            $table->timestamps();
+        });
+
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained();

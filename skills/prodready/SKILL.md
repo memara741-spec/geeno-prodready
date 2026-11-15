@@ -49,6 +49,8 @@ Ask which findings to fix; offer all critical and high by default. Follow the fi
 
 Run `python3 scripts/verify_fixes.py <app_root> --baseline .prodready/findings.json`. For review-only findings, re-read the changed code and write a test where practical. Run the app's own build and tests. Add a Verification section with before and after. To leave tests behind, run `python scripts/generate_regression_tests.py <app_root> --findings .prodready/findings.json`: it writes a guard test (fails before the fix, passes after), a Laravel route contract and behaviour tests, and Node tests for open routes into `.prodready/regression/`; run them before and after the fix and tell the user which ones you could not run.
 
+Runtime checks (only with the owner's agreement, on their own copy or site): `python scripts/profile_runtime.py --base-url <local or staging url> --app-root <app_root> --i-own-this` measures queries, repeated queries, time and memory (install `assets/laravel/ProdreadyProfile.php` first); `python scripts/verify_production.py --url <site> --allow-network --i-own-this` checks the certificate, HTTPS redirect, exposed files and, with `assets/laravel/prodready-health.php`, the scheduler, queue and backups. Never run either without the owner saying the target is theirs.
+
 ## Phase 7: Launch gate
 
 Produce the checklist from `references/checks/launch.md` with each item done, not done or not applicable, and the owner actions still open. Restate the verdict, and name exactly which findings block it.
@@ -80,7 +82,7 @@ If a critical finding affects a live app (an exposed secret, an open database) t
 | `framework: remix`, `sveltekit`, `nuxt` | `references/stacks/remix-sveltekit-nuxt.md` |
 | `framework: express`, `fastify`, `hono`, `koa` | `references/stacks/express-node.md` |
 | `framework: django`, `flask`, `fastapi` | `references/stacks/python-backends.md` |
-| `framework: laravel` | `references/stacks/laravel.md`, `references/checks/laravel.md`, `references/checks/multitenancy.md`, `references/checks/business-logic.md` |
+| `framework: laravel` | `references/stacks/laravel.md`, `references/checks/laravel.md`, `references/checks/multitenancy.md`, `references/checks/business-logic.md`, `references/checks/authorization.md`, `references/checks/financial-integrity.md` |
 | any app with docker, nginx, Apache or deploy scripts | `references/checks/infrastructure.md` |
 | `mobile: expo` or `react-native` | `references/stacks/expo-react-native.md` |
 | `payments: any` | `references/stacks/stripe.md`, `references/checks/payments.md` |

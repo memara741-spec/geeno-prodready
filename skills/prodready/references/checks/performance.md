@@ -1,6 +1,6 @@
 # Performance (PERF)
 
-What this covers: the 12 PERF checks. Read it when a finding in this category appears or when reviewing this area. After reading you can explain each finding in plain words, fix it and verify the fix.
+What this covers: the 15 PERF checks. Read it when a finding in this category appears or when reviewing this area. After reading you can explain each finding in plain words, fix it and verify the fix.
 Last checked: 2026-11-13. Platform claims were confirmed against vendor documentation on that date where a URL is given in the stack playbooks; claims without a URL are marked in the playbook.
 
 ### PERF-001 — Query inside a loop
@@ -172,5 +172,47 @@ Last checked: 2026-11-13. Platform claims were confirmed against vendor document
 **Fix:** Use `foreignId()->constrained()` or add an index.
 
 **Verify:** `EXPLAIN` shows the index used.
+
+### PERF-013 — Page runs too many database queries (measured)
+**Severity:** medium · **Mode:** scan · **Applies to:** laravel
+**Auto-fix:** assisted
+
+**In plain words:** This page runs a very large number of database queries.
+
+**How to detect:** Run `scripts/profile_runtime.py` (or `scripts/run_all.py`). It reports this check with file, line and a redacted snippet. Open each location before reporting it.
+
+**Why it matters:** Every query is a round trip; the page slows with data.
+
+**Fix:** Eager load, join, or cache; confirm with the profiler after.
+
+**Verify:** Query count drops below the threshold.
+
+### PERF-014 — Same query repeated many times (measured N+1)
+**Severity:** medium · **Mode:** scan · **Applies to:** laravel
+**Auto-fix:** assisted
+
+**In plain words:** The same query ran many times while building one page (measured N+1).
+
+**How to detect:** Run `scripts/profile_runtime.py` (or `scripts/run_all.py`). It reports this check with file, line and a redacted snippet. Open each location before reporting it.
+
+**Why it matters:** A confirmed N+1: cost grows with the number of rows.
+
+**Fix:** Load the relation up front with `with()`.
+
+**Verify:** Repeat count falls to 1.
+
+### PERF-015 — Slow response or high memory use (measured)
+**Severity:** medium · **Mode:** scan · **Applies to:** laravel
+**Auto-fix:** assisted
+
+**In plain words:** A page is slow or uses a lot of memory.
+
+**How to detect:** Run `scripts/profile_runtime.py` (or `scripts/run_all.py`). It reports this check with file, line and a redacted snippet. Open each location before reporting it.
+
+**Why it matters:** Slow pages lose users and big memory use crashes workers.
+
+**Fix:** Paginate, cache, queue heavy work and select fewer columns.
+
+**Verify:** Time and memory fall under the thresholds.
 
 
